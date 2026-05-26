@@ -154,7 +154,7 @@
             100% { transform: scale(1.6); opacity: 0; }
         }
 
-        /* Overlay d'alerte (Quand l'autre envoie une notification) */
+        /* Overlay d'alerte */
         #alert-overlay {
             display: none;
             position: fixed;
@@ -176,7 +176,7 @@
             border: 3px solid var(--water);
             padding: 40px 30px;
             border-radius: 24px;
-            max-width: 90%,
+            max-width: 90%;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
@@ -253,7 +253,7 @@
         </div>
     </div>
 
-    <!-- OVERLAY ALERTE : QUAND ON REÇOIT UN ORDRE DE BOIRE -->
+    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <div class="alert-title">🌊 BOIS DE L'EAU !</div>
@@ -262,34 +262,43 @@
         </div>
     </div>
 
-    <!-- PETIT POPUP DE CONFIRMATION -->
+    <!-- POPUP DE CONFIRMATION -->
     <div id="toast">Rappel envoyé ! 🚀</div>
 
-    <!-- SON DE NOTIFICATION (OPTIONNEL) -->
+    <!-- SON DE NOTIFICATION -->
     <audio id="water-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
 <script>
     // ==========================================
-    // CONFIGURATION SUPABASE (À REMPLACER)
+    // CONFIGURATION SUPABASE
     // ==========================================
     const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MDU5NTksImV4cCI6MjA5NTM4MTk1OX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPJDoZfU";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NjI4MTUsImV4cCI6MjA2NDAzgzgxNX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPDoZfU";
     // ==========================================
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase;
+    try {
+        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (e) {
+        alert("Erreur de configuration de la base de données. Vérifiez l'URL ou la clé Supabase.");
+    }
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
 
-    // Au chargement, on vérifie si l'utilisateur s'est déjà connecté auparavant
+    // On lance la vérification au démarrage
     if (currentUser) {
         showApp();
     }
 
     function selectProfile(name) {
-        currentUser = name;
-        localStorage.setItem('water_user', name);
-        showApp();
+        try {
+            currentUser = name;
+            localStorage.setItem('water_user', name);
+            showApp();
+        } catch(err) {
+            alert("Erreur lors de la sélection : " + err.message);
+        }
     }
 
     function showApp() {
@@ -300,7 +309,6 @@
         document.getElementById('current-user').innerText = currentUser;
         document.getElementById('target-user').innerText = `Envoie un rappel de boire à ${targetUser}`;
         
-        // On active l'écoute en temps réel des messages destinés à cet utilisateur
         listenToReminders();
     }
 
@@ -309,62 +317,59 @@
         location.reload();
     }
 
-    // FONCTION : ENVOYER LE SIGNAL DANS LA BASE DE DONNÉES
     async function sendWaterReminder() {
-        // Petite animation visuelle au clic
         const container = document.getElementById('btn-container');
         container.classList.add('animate-pulse');
         setTimeout(() => container.classList.remove('animate-pulse'), 1200);
 
-        // Insertion du rappel dans Supabase
-        const { error } = await supabase
-            .from('water_reminders')
-            .insert([{ sender: currentUser }]);
+        try {
+            const { error } = await supabase
+                .from('water_reminders')
+                .insert([{ sender: currentUser }]);
 
-        if (!error) {
-            showToast();
-        } else {
-            console.error("Erreur d'envoi:", error);
+            if (!error) {
+                showToast();
+            } else {
+                alert("Erreur réseau Supabase : " + error.message);
+            }
+        } catch(e) {
+            alert("Impossible d'envoyer le signal : " + e.message);
         }
     }
 
-    // FONCTION : ÉCOUTER LES MESSAGES EN TEMPS RÉEL
     function listenToReminders() {
-        supabase
-            .channel('public:water_reminders')
-            .on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
-                const newReminder = payload.new;
-                
-                // Si le message vient de l'AUTRE personne, on déclenche l'alerte
-                if (newReminder.sender === targetUser) {
-                    triggerAlert(newReminder.sender);
-                }
-            })
-            .subscribe();
+        try {
+            supabase
+                .channel('public:water_reminders')
+                .on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
+                    const newReminder = payload.new;
+                    if (newReminder.sender === targetUser) {
+                        triggerAlert(newReminder.sender);
+                    }
+                })
+                .subscribe();
+        } catch(e) {
+            console.error("Erreur de synchronisation temps réel :", e);
+        }
     }
 
-    // DÉCLENCHER L'ÉCRAN D'ALERTE
     function triggerAlert(sender) {
         document.getElementById('alert-message').innerHTML = `<b>${sender}</b> te rappelle qu'il est temps de t'hydrater immédiatement !`;
         document.getElementById('alert-overlay').style.display = 'flex';
         
-        // Jouer un petit bruit d'eau
         try {
             document.getElementById('water-sound').play();
-        } catch(e) { console.log("Le navigateur a bloqué le son au démarrage."); }
+        } catch(e) { console.log("Son bloqué par le navigateur."); }
 
-        // Si le téléphone le supporte (Android), fait vibrer le téléphone
         if (navigator.vibrate) {
             navigator.vibrate([200, 100, 200, 100, 200]);
         }
     }
 
-    // FERMER L'ALERTE
     function dismissAlert() {
         document.getElementById('alert-overlay').style.display = 'none';
     }
 
-    // PETIT TOAST DE CONFIRMATION
     function showToast() {
         const toast = document.getElementById('toast');
         toast.style.opacity = '1';
