@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💧 Drink Water !</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --water: #38bdf8;
+            --water-deep: #0284c7;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Écran de sélection du profil */
+        #profile-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--water);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .profile-btn {
+            background: var(--card);
+            border: 2px solid var(--card);
+            color: var(--text);
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            width: 260px;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-btn:active {
+            transform: scale(0.95);
+            border-color: var(--water);
+        }
+
+        /* Écran Principal */
+        #main-app {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .header-status {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .user-tag {
+            color: var(--water);
+            font-weight: bold;
+        }
+
+        /* Le gros bouton d'eau */
+        .water-button-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-water-btn {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--water), var(--water-deep));
+            border: none;
+            color: white;
+            font-size: 4rem;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.4), inset 0 -8px 0 rgba(0,0,0,0.1);
+            z-index: 2;
+            transition: transform 0.1s ease;
+        }
+
+        .main-water-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Onde animée derrière le bouton */
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: var(--water);
+            opacity: 0.4;
+            z-index: 1;
+        }
+
+        .animate-pulse .pulse-ring {
+            animation: ripple 1.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.4; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Overlay d'alerte (Quand l'autre envoie une notification) */
+        #alert-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .alert-box {
+            background: var(--card);
+            border: 3px solid var(--water);
+            padding: 40px 30px;
+            border-radius: 24px;
+            max-width: 90%,
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .alert-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        .got-it-btn {
+            background: var(--water);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            margin-top: 25px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .reset-profile {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Notifications style toast */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 50;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ÉCRAN 1 : CHOIX DU PROFIL -->
+    <div id="profile-selection">
+        <h1>💧 Drink Water Reminder</h1>
+        <p class="subtitle">Qui êtes-vous ? / Who are you ?</p>
+        <button class="profile-btn" onclick="selectProfile('Clément')">👨‍💻 Clément</button>
+        <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
+    </div>
+
+    <!-- ÉCRAN 2 : APPLICATION PRINCIPALE -->
+    <div id="main-app">
+        <div class="header-status">
+            Profil : <span id="current-user" class="user-tag">...</span><br>
+            <span style="font-size: 0.85rem;" id="target-user">Envoie un rappel à ...</span>
+        </div>
+
+        <div class="water-button-container" id="btn-container">
+            <div class="pulse-ring"></div>
+            <button class="main-water-btn" onclick="sendWaterReminder()">💧</button>
+        </div>
+
+        <div>
+            <button class="reset-profile" onclick="logout()">Changer de profil</button>
+        </div>
+    </div>
+
+    <!-- OVERLAY ALERTE : QUAND ON REÇOIT UN ORDRE DE BOIRE -->
+    <div id="alert-overlay">
+        <div class="alert-box">
+            <div class="alert-title">🌊 BOIS DE L'EAU !</div>
+            <p id="alert-message" style="font-size: 1.2rem; line-height: 1.5;"></p>
+            <button class="got-it-btn" onclick="dismissAlert()">C'est fait ! 👍</button>
+        </div>
+    </div>
+
+    <!-- PETIT POPUP DE CONFIRMATION -->
+    <div id="toast">Rappel envoyé ! 🚀</div>
+
+    <!-- SON DE NOTIFICATION (OPTIONNEL) -->
+    <audio id="water-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+
+<script>
+    // ==========================================
+    // CONFIGURATION SUPABASE (À REMPLACER)
+    // ==========================================
+    const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MDU5NTksImV4cCI6MjA5NTM4MTk1OX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPJDoZfU";
+    // ==========================================
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = localStorage.getItem('water_user') || null;
+    let targetUser = "";
+
+    // Au chargement, on vérifie si l'utilisateur s'est déjà connecté auparavant
+    if (currentUser) {
+        showApp();
+    }
+
+    function selectProfile(name) {
+        currentUser = name;
+        localStorage.setItem('water_user', name);
+        showApp();
+    }
+
+    function showApp() {
+        targetUser = (currentUser === "Clément") ? "Hoa" : "Clément";
+        
+        document.getElementById('profile-selection').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('current-user').innerText = currentUser;
+        document.getElementById('target-user').innerText = `Envoie un rappel de boire à ${targetUser}`;
+        
+        // On active l'écoute en temps réel des messages destinés à cet utilisateur
+        listenToReminders();
+    }
+
+    function logout() {
+        localStorage.removeItem('water_user');
+        location.reload();
+    }
+
+    // FONCTION : ENVOYER LE SIGNAL DANS LA BASE DE DONNÉES
+    async function sendWaterReminder() {
+        // Petite animation visuelle au clic
+        const container = document.getElementById('btn-container');
+        container.classList.add('animate-pulse');
+        setTimeout(() => container.classList.remove('animate-pulse'), 1200);
+
+        // Insertion du rappel dans Supabase
+        const { error } = await supabase
+            .from('water_reminders')
+            .insert([{ sender: currentUser }]);
+
+        if (!error) {
+            showToast();
+        } else {
+            console.error("Erreur d'envoi:", error);
+        }
+    }
+
+    // FONCTION : ÉCOUTER LES MESSAGES EN TEMPS RÉEL
+    function listenToReminders() {
+        supabase
+            .channel('public:water_reminders')
+            .on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
+                const newReminder = payload.new;
+                
+                // Si le message vient de l'AUTRE personne, on déclenche l'alerte
+                if (newReminder.sender === targetUser) {
+                    triggerAlert(newReminder.sender);
+                }
+            })
+            .subscribe();
+    }
+
+    // DÉCLENCHER L'ÉCRAN D'ALERTE
+    function triggerAlert(sender) {
+        document.getElementById('alert-message').innerHTML = `<b>${sender}</b> te rappelle qu'il est temps de t'hydrater immédiatement !`;
+        document.getElementById('alert-overlay').style.display = 'flex';
+        
+        // Jouer un petit bruit d'eau
+        try {
+            document.getElementById('water-sound').play();
+        } catch(e) { console.log("Le navigateur a bloqué le son au démarrage."); }
+
+        // Si le téléphone le supporte (Android), fait vibrer le téléphone
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 200]);
+        }
+    }
+
+    // FERMER L'ALERTE
+    function dismissAlert() {
+        document.getElementById('alert-overlay').style.display = 'none';
+    }
+
+    // PETIT TOAST DE CONFIRMATION
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.style.opacity = '1';
+        setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+    }
+</script>
+</body>
+</html>
