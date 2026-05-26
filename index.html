@@ -276,9 +276,10 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NjI4MTUsImV4cCI6MjA2NDAzgzgxNX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPDoZfU";
     // ==========================================
 
-    let supabase;
+    let supabaseClient;
     try {
-        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Correction du conflit de nom avec la variable globale de l'extension
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch (e) {
         alert("Erreur de configuration de la base de données. Vérifiez l'URL ou la clé Supabase.");
     }
@@ -323,7 +324,7 @@
         setTimeout(() => container.classList.remove('animate-pulse'), 1200);
 
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('water_reminders')
                 .insert([{ sender: currentUser }]);
 
@@ -339,7 +340,7 @@
 
     function listenToReminders() {
         try {
-            supabase
+            supabaseClient
                 .channel('public:water_reminders')
                 .on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
                     const newReminder = payload.new;
