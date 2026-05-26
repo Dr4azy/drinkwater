@@ -99,6 +99,7 @@
             text-align: center;
             font-size: 1.1rem;
             color: var(--text-secondary);
+            line-height: 1.6;
         }
 
         .user-tag {
@@ -181,7 +182,7 @@
         }
 
         .alert-title {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             margin-bottom: 15px;
             animation: bounce 0.5s infinite alternate;
         }
@@ -208,6 +209,7 @@
             text-decoration: underline;
             cursor: pointer;
             font-size: 0.9rem;
+            padding: 10px 20px;
         }
 
         /* Notifications style toast */
@@ -239,7 +241,7 @@
     <!-- ÉCRAN 2 : APPLICATION PRINCIPALE -->
     <div id="main-app">
         <div class="header-status">
-            Profil : <span id="current-user" class="user-tag">...</span><br>
+            <span id="label-profile">Profil :</span> <span id="current-user" class="user-tag">...</span><br>
             <span style="font-size: 0.85rem;" id="target-user">Envoie un rappel à ...</span>
         </div>
 
@@ -249,16 +251,16 @@
         </div>
 
         <div>
-            <button class="reset-profile" onclick="logout()">Changer de profil</button>
+            <button id="btn-logout" class="reset-profile" onclick="logout()">Changer de profil</button>
         </div>
     </div>
 
     <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
-            <div class="alert-title">🌊 BOIS DE L'EAU !</div>
+            <div id="alert-title-text" class="alert-title">🌊 BOIS DE L'EAU !</div>
             <p id="alert-message" style="font-size: 1.2rem; line-height: 1.5;"></p>
-            <button class="got-it-btn" onclick="dismissAlert()">C'est fait ! 👍</button>
+            <button id="btn-dismiss" class="got-it-btn" onclick="dismissAlert()">C'est fait ! 👍</button>
         </div>
     </div>
 
@@ -273,20 +275,20 @@
     // CONFIGURATION SUPABASE
     // ==========================================
     const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
-    const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";    // ==========================================
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NjI4MTUsImV4cCI6MjA2NDAzMzgxNX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPDoZfU";
+    // ==========================================
 
     let supabaseClient;
     try {
-        // Correction du conflit de nom avec la variable globale de l'extension
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch (e) {
-        alert("Erreur de configuration de la base de données. Vérifiez l'URL ou la clé Supabase.");
+        alert("Erreur de configuration Supabase.");
     }
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
 
-    // On lance la vérification au démarrage
+    // On charge l'application si l'utilisateur est déjà connecté
     if (currentUser) {
         showApp();
     }
@@ -307,14 +309,31 @@
         document.getElementById('profile-selection').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('current-user').innerText = currentUser;
-        document.getElementById('target-user').innerText = `Envoie un rappel de boire à ${targetUser}`;
+        
+        // Application des traductions en fonction du profil choisi
+        if (currentUser === "Hoa") {
+            document.getElementById('label-profile').innerText = "Hồ sơ:";
+            document.getElementById('target-user').innerText = `Gửi nhắc nhở uống nước cho ${targetUser}`;
+            document.getElementById('btn-logout').innerText = "Thay đổi hồ sơ";
+            document.getElementById('toast').innerText = "Đã gửi nhắc nhở! 🚀";
+            document.getElementById('alert-title-text').innerText = "🌊 UỐNG NƯỚC ĐI !";
+            document.getElementById('btn-dismiss').innerText = "Đã xong! 👍";
+        } else {
+            document.getElementById('label-profile').innerText = "Profil :";
+            document.getElementById('target-user').innerText = `Envoie un rappel de boire à ${targetUser}`;
+            document.getElementById('btn-logout').innerText = "Changer de profil";
+            document.getElementById('toast').innerText = "Rappel envoyé ! 🚀";
+            document.getElementById('alert-title-text').innerText = "🌊 BOIS DE L'EAU !";
+            document.getElementById('btn-dismiss').innerText = "C'est fait ! 👍";
+        }
         
         listenToReminders();
     }
 
     function logout() {
         localStorage.removeItem('water_user');
-        location.reload();
+        // Forcer le rechargement propre de la page pour réinitialiser l'affichage
+        window.location.href = window.location.origin + window.location.pathname;
     }
 
     async function sendWaterReminder() {
@@ -330,10 +349,10 @@
             if (!error) {
                 showToast();
             } else {
-                alert("Erreur réseau Supabase : " + error.message);
+                alert("Erreur : " + error.message);
             }
         } catch(e) {
-            alert("Impossible d'envoyer le signal : " + e.message);
+            alert("Impossible d'envoyer : " + e.message);
         }
     }
 
@@ -349,12 +368,17 @@
                 })
                 .subscribe();
         } catch(e) {
-            console.error("Erreur de synchronisation temps réel :", e);
+            console.error("Erreur Realtime :", e);
         }
     }
 
     function triggerAlert(sender) {
-        document.getElementById('alert-message').innerHTML = `<b>${sender}</b> te rappelle qu'il est temps de t'hydrater immédiatement !`;
+        if (currentUser === "Hoa") {
+            document.getElementById('alert-message').innerHTML = `<b>${sender}</b> nhắc bạn rằng đã đến lúc phải uống nước ngay lập tức!`;
+        } else {
+            document.getElementById('alert-message').innerHTML = `<b>${sender}</b> te rappelle qu'il est temps de t'hydrater immédiatement !`;
+        }
+        
         document.getElementById('alert-overlay').style.display = 'flex';
         
         try {
