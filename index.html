@@ -91,20 +91,49 @@
             justify-content: space-between;
             width: 100%;
             height: 100vh;
-            padding: 40px 20px;
+            padding: 30px 20px 50px 20px;
             position: relative;
         }
 
+        /* Barre supérieure avec infos et bouton de déconnexion très visible */
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 15px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
         .header-status {
-            text-align: center;
-            font-size: 1.1rem;
+            text-align: left;
+            font-size: 1rem;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.4;
         }
 
         .user-tag {
             color: var(--water);
             font-weight: bold;
+        }
+
+        .reset-profile {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+
+        .reset-profile:active {
+            background: #b91c1c;
         }
 
         /* Le gros bouton d'eau */
@@ -115,6 +144,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: auto 0;
         }
 
         .main-water-btn {
@@ -202,16 +232,6 @@
             width: 100%;
         }
 
-        .reset-profile {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.9rem;
-            padding: 10px 20px;
-        }
-
         /* Notifications style toast */
         #toast {
             position: fixed;
@@ -240,9 +260,12 @@
 
     <!-- ÉCRAN 2 : APPLICATION PRINCIPALE -->
     <div id="main-app">
-        <div class="header-status">
-            <span id="label-profile">Profil :</span> <span id="current-user" class="user-tag">...</span><br>
-            <span style="font-size: 0.85rem;" id="target-user">Envoie un rappel à ...</span>
+        <div class="top-bar">
+            <div class="header-status">
+                <span id="label-profile">Profil :</span> <span id="current-user" class="user-tag">...</span><br>
+                <span style="font-size: 0.8rem;" id="target-user">Envoie un rappel à ...</span>
+            </div>
+            <button id="btn-logout" class="reset-profile" onclick="logout()">Changer</button>
         </div>
 
         <div class="water-button-container" id="btn-container">
@@ -250,9 +273,8 @@
             <button class="main-water-btn" onclick="sendWaterReminder()">💧</button>
         </div>
 
-        <div>
-            <button id="btn-logout" class="reset-profile" onclick="logout()">Changer de profil</button>
-        </div>
+        <!-- Espace vide technique pour l'alignement flexbox mobile -->
+        <div></div>
     </div>
 
     <!-- OVERLAY ALERTE -->
@@ -272,10 +294,10 @@
 
 <script>
     // ==========================================
-    // CONFIGURATION SUPABASE
+    // CONFIGURATION SUPABASE METTANT EN OEUVRE LA NOUVELLE CLÉ
     // ==========================================
     const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3hmc2t5bmZ1d2NiYmdqbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NjI4MTUsImV4cCI6MjA2NDAzMzgxNX0.owCupFvpUZsKIGRXytQ2CGy1NSbbgGlTjnNjPDoZfU";
+    const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     // ==========================================
 
     let supabaseClient;
@@ -288,7 +310,6 @@
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
 
-    // On charge l'application si l'utilisateur est déjà connecté
     if (currentUser) {
         showApp();
     }
@@ -310,18 +331,18 @@
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('current-user').innerText = currentUser;
         
-        // Application des traductions en fonction du profil choisi
+        // Traduction dynamique complète si le profil sélectionné est Hoa
         if (currentUser === "Hoa") {
             document.getElementById('label-profile').innerText = "Hồ sơ:";
             document.getElementById('target-user').innerText = `Gửi nhắc nhở uống nước cho ${targetUser}`;
-            document.getElementById('btn-logout').innerText = "Thay đổi hồ sơ";
+            document.getElementById('btn-logout').innerText = "Thay đổi";
             document.getElementById('toast').innerText = "Đã gửi nhắc nhở! 🚀";
             document.getElementById('alert-title-text').innerText = "🌊 UỐNG NƯỚC ĐI !";
             document.getElementById('btn-dismiss').innerText = "Đã xong! 👍";
         } else {
             document.getElementById('label-profile').innerText = "Profil :";
             document.getElementById('target-user').innerText = `Envoie un rappel de boire à ${targetUser}`;
-            document.getElementById('btn-logout').innerText = "Changer de profil";
+            document.getElementById('btn-logout').innerText = "Changer";
             document.getElementById('toast').innerText = "Rappel envoyé ! 🚀";
             document.getElementById('alert-title-text').innerText = "🌊 BOIS DE L'EAU !";
             document.getElementById('btn-dismiss').innerText = "C'est fait ! 👍";
@@ -332,7 +353,6 @@
 
     function logout() {
         localStorage.removeItem('water_user');
-        // Forcer le rechargement propre de la page pour réinitialiser l'affichage
         window.location.href = window.location.origin + window.location.pathname;
     }
 
