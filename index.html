@@ -13,9 +13,9 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
-    <!-- Liens pour les Logos / Icônes d'écran d'accueil avec le fond bleu sombre #0f172a -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%22.85em%22 x=%225%22 font-size=%2280%22>💧</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%22.85em%22 x=%225%22 font-size=%2280%22>💧</text></svg>">
+    <!-- Liens pour les Logos / Icônes d'écran d'accueil (Goutte plus petite et parfaitement centrée) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
 
     <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -77,7 +77,7 @@
         .chart-container-vertical { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
         .btn-back { background: var(--card); border: 1px solid var(--text-secondary); color: var(--text); padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Overlay d'alerte (Modifié pour agrandir le texte perso) */
+        /* Overlay d'alerte */
         #alert-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         .alert-box { background: var(--card); border: 3px solid var(--water); padding: 40px 25px; border-radius: 24px; max-width: 90%; width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         #alert-message { font-size: 1.8rem; line-height: 1.4; margin: 10px 0; font-weight: bold; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -174,7 +174,7 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
-    <!-- OVERLAY ALERTE RAPPEL PERSO UNIQUEMENT -->
+    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <p id="alert-message"></p>
