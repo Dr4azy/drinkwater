@@ -4,12 +4,14 @@
     <script>
         // Récupération immédiate de l'utilisateur pour l'associer dès le chargement du script Webpushr
         var initialUser = localStorage.getItem('water_user') || "Visiteur";
+        
         (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));
         
-        // Configuration centralisée à l'initialisation : pas de risques de conflits plus tard
+        // Configuration avec le sous-dossier GitHub Pages spécifié via 'sd'
         webpushr('setup', {
             'key': 'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs',
-            'user_id': initialUser 
+            'user_id': initialUser,
+            'sd': 'drinkwater' 
         });
     </script>
     <meta charset="UTF-8">
@@ -502,7 +504,7 @@
     let chartWeekHoaInstance = null;
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/webpushr-sw.js')
+        navigator.serviceWorker.register('/drinkwater/webpushr-sw.js')
         .then(reg => console.log('Service Worker Webpushr connecté !', reg))
         .catch(err => console.error('Erreur Service Worker:', err));
     }
@@ -515,9 +517,14 @@
         currentUser = name;
         localStorage.setItem('water_user', name);
         
-        // Mettre à jour Webpushr dynamiquement à la volée si déjà chargé
         if (typeof window.webpushr === 'function') {
-            try { window.webpushr('setup', { 'key': WEBPUSHR_KEY, 'user_id': name }); } catch(e){}
+            try { 
+                window.webpushr('setup', { 
+                    'key': WEBPUSHR_KEY, 
+                    'user_id': name,
+                    'sd': 'drinkwater'
+                }); 
+            } catch(e){}
         }
         showApp();
     }
@@ -561,7 +568,6 @@
         document.getElementById('btn-back-main').innerText = isActualHoa ? "⬅ Quay lại" : "⬅ Retour";
     }
 
-    // Changement de la coquille typo "dateStrHost" détectée lors du calcul global
     function getLocalDateStringFromOffset(offset) {
         const utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
         return new Date(utc + (3600000 * offset)).toISOString().split('T')[0];
@@ -710,39 +716,23 @@
 
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && currentUser) { checkOfflineReminders(); } });
 
-    // Nettoyage complet de la fonction pour utiliser le gestionnaire d'événements natif asynchrone sans plantage .apply
     function demanderAutorisationPush() {
-        if (!('Notification' in window)) {
-            alert("Ce navigateur ne gère pas les notifications web.");
-            return;
-        }
+        if (!('Notification' in window)) return;
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                // Si l'objet de base de l'API Webpushr est pleinement instancié
                 if (window._webpushr && typeof window._webpushr.inline_push_unsubscribed === 'function') {
-                    try {
-                        window._webpushr.inline_push_unsubscribed(currentUser);
-                        alert("Appareil synchronisé avec succès ! 🚀");
-                    } catch(err) {
-                        alert("Autorisation validée ! Le système finalise l'activation. 👍");
-                    }
+                    try { window._webpushr.inline_push_unsubscribed(currentUser); } catch(err) {}
                 } else {
-                    // Sinon, on pousse l'action native de demande de prompt dans leur file d'attente sécurisée
-                    try {
-                        webpushr('showPrompt');
-                        alert("Autorisation validée ! Le système s'active. 👍");
-                    } catch(e) {
-                        alert("Autorisation enregistrée ! 🚀 Elle sera 100% active au prochain rechargement.");
-                    }
+                    try { webpushr('showPrompt'); } catch(e) {}
                 }
-            } else if (permission === 'denied') {
-                alert("Les notifications sont bloquées. Activez-les manuellement dans les paramètres de votre navigateur.");
+                
+                const toast = document.getElementById('toast');
+                toast.innerText = currentUser === 'Hoa' ? "Thông báo đã bật! 🔔" : "Notifications activées ! 🔔";
+                toast.style.opacity = '1';
+                setTimeout(() => toast.style.opacity = '0', 1800);
             }
-        }).catch(err => { 
-            console.log("Webpushr se charge...", err);
-            alert("Le système de notification se synchronise en arrière-plan. 👍");
-        });
+        }).catch(err => { console.log("Webpushr initialisation...", err); });
     }
 
     function renderCharts() {
