@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script>
-        // Récupération immédiate de l'utilisateur pour l'associer dès le chargement du script Webpushr
-        var initialUser = localStorage.getItem('water_user') || "Visiteur";
-        
-        (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));
-        
-        // Configuration avec le sous-dossier GitHub Pages spécifié via 'sd'
-        webpushr('setup', {
-            'key': 'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs',
-            'user_id': initialUser,
-            'sd': 'drinkwater' 
-        });
+    <script>(function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.src = "https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk-alternative'));
+    webpushr('init','BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs','https://dr4azy.github.io/drinkwater/webpushr-sw.js','/drinkwater/');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
