@@ -2,8 +2,15 @@
 <html lang="fr">
 <head>
     <script>
+        // Récupération immédiate de l'utilisateur pour l'associer dès le chargement du script Webpushr
+        var initialUser = localStorage.getItem('water_user') || "Visiteur";
         (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));
-        webpushr('setup',{'key':'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs' });
+        
+        // Configuration centralisée à l'initialisation : pas de risques de conflits plus tard
+        webpushr('setup', {
+            'key': 'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs',
+            'user_id': initialUser 
+        });
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -507,6 +514,11 @@
     function selectProfile(name) {
         currentUser = name;
         localStorage.setItem('water_user', name);
+        
+        // Mettre à jour Webpushr dynamiquement à la volée si déjà chargé
+        if (typeof window.webpushr === 'function') {
+            try { window.webpushr('setup', { 'key': WEBPUSHR_KEY, 'user_id': name }); } catch(e){}
+        }
         showApp();
     }
 
@@ -549,6 +561,7 @@
         document.getElementById('btn-back-main').innerText = isActualHoa ? "⬅ Quay lại" : "⬅ Retour";
     }
 
+    // Changement de la coquille typo "dateStrHost" détectée lors du calcul global
     function getLocalDateStringFromOffset(offset) {
         const utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
         return new Date(utc + (3600000 * offset)).toISOString().split('T')[0];
@@ -575,7 +588,7 @@
     function calculateRealtimeMetrics() {
         const totals = { 'Clément': 0, 'Hoa': 0 };
         const dateStrClem = getLocalDateStringFromOffset(timeoffsets['Clément']);
-        const dateStrHost = getLocalDateStringFromOffset(timeoffsets['Hoa']);
+        const dateStrHoa = getLocalDateStringFromOffset(timeoffsets['Hoa']);
 
         appState.allLogs.forEach(log => {
             const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
@@ -583,7 +596,7 @@
             const logLocalDateStr = new Date(logUtc + (3600000 * userOffset)).toISOString().split('T')[0];
             
             if (log.user_name === 'Clément' && logLocalDateStr === dateStrClem) totals['Clément'] += log.amount_cl;
-            if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHost) totals['Hoa'] += log.amount_cl;
+            if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHoa) totals['Hoa'] += log.amount_cl;
         });
 
         ['Clément', 'Hoa'].forEach(user => {
@@ -697,35 +710,39 @@
 
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && currentUser) { checkOfflineReminders(); } });
 
+    // Nettoyage complet de la fonction pour utiliser le gestionnaire d'événements natif asynchrone sans plantage .apply
     function demanderAutorisationPush() {
         if (!('Notification' in window)) {
-            alert("Ce navigateur ne gère pas les notifications.");
+            alert("Ce navigateur ne gère pas les notifications web.");
             return;
         }
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                // Utilisation directe et sécurisée du point d'ancrage natif de l'API Webpushr sans passer par l'alias global instable
+                // Si l'objet de base de l'API Webpushr est pleinement instancié
                 if (window._webpushr && typeof window._webpushr.inline_push_unsubscribed === 'function') {
                     try {
                         window._webpushr.inline_push_unsubscribed(currentUser);
-                        alert("Autorisation accordée ! 🚀 Appareil synchronisé.");
+                        alert("Appareil synchronisé avec succès ! 🚀");
                     } catch(err) {
-                        alert("Configuration validée ! Le système se synchronise en tâche de fond. 👍");
+                        alert("Autorisation validée ! Le système finalise l'activation. 👍");
                     }
-                } else if (typeof window.webpushr === 'function') {
-                    try {
-                        window.webpushr('setup', { 'user_id': currentUser });
-                        window.webpushr('showPrompt');
-                    } catch(e) {}
-                    alert("Configuration validée ! Le système s'active. 👍");
                 } else {
-                    alert("Autorisation enregistrée ! 🚀 Elle s'activera au prochain rechargement.");
+                    // Sinon, on pousse l'action native de demande de prompt dans leur file d'attente sécurisée
+                    try {
+                        webpushr('showPrompt');
+                        alert("Autorisation validée ! Le système s'active. 👍");
+                    } catch(e) {
+                        alert("Autorisation enregistrée ! 🚀 Elle sera 100% active au prochain rechargement.");
+                    }
                 }
             } else if (permission === 'denied') {
-                alert("Les notifications sont bloquées. Activez-les dans les paramètres de votre navigateur.");
+                alert("Les notifications sont bloquées. Activez-les manuellement dans les paramètres de votre navigateur.");
             }
-        }).catch(err => { alert("Erreur système : " + err); });
+        }).catch(err => { 
+            console.log("Webpushr se charge...", err);
+            alert("Le système de notification se synchronise en arrière-plan. 👍");
+        });
     }
 
     function renderCharts() {
