@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Water💧</title>
+    <title>Water</title>
     
     <!-- Configuration Application Mobile (PWA / Écran d'accueil) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Water💧">
+    <meta name="apple-mobile-web-app-title" content="Water">
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
-    <!-- Liens pour les Logos / Icônes d'écran d'accueil -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💧</text></svg>">
+    <!-- Liens pour les Logos / Icônes d'écran d'accueil avec le fond bleu sombre #0f172a -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%22.85em%22 x=%225%22 font-size=%2280%22>💧</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%22.85em%22 x=%225%22 font-size=%2280%22>💧</text></svg>">
 
     <!-- Supabase & Chart.js Libraries -->
@@ -77,10 +77,11 @@
         .chart-container-vertical { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
         .btn-back { background: var(--card); border: 1px solid var(--text-secondary); color: var(--text); padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Overlay d'alerte */
+        /* Overlay d'alerte (Modifié pour agrandir le texte perso) */
         #alert-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .alert-box { background: var(--card); border: 3px solid var(--water); padding: 35px 25px; border-radius: 24px; max-width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .got-it-btn { background: var(--water); color: #000; border: none; padding: 14px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; margin-top: 25px; cursor: pointer; width: 100%; }
+        .alert-box { background: var(--card); border: 3px solid var(--water); padding: 40px 25px; border-radius: 24px; max-width: 90%; width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        #alert-message { font-size: 1.8rem; line-height: 1.4; margin: 10px 0; font-weight: bold; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .got-it-btn { background: var(--water); color: #000; border: none; padding: 16px 30px; font-size: 1.3rem; font-weight: bold; border-radius: 12px; margin-top: 30px; cursor: pointer; width: 100%; }
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none; }
     </style>
 </head>
@@ -88,7 +89,7 @@
 
     <!-- CHOIX PROFIL -->
     <div id="profile-selection">
-        <h1 style="color:var(--water); margin-bottom:5px;">💧 Water</h1>
+        <h1 style="color:var(--water); margin-bottom:5px;">Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
         <button class="profile-btn" onclick="selectProfile('Clément')">👨‍💻 Clément</button>
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
@@ -173,11 +174,10 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
-    <!-- OVERLAY ALERTE -->
+    <!-- OVERLAY ALERTE RAPPEL PERSO UNIQUEMENT -->
     <div id="alert-overlay">
         <div class="alert-box">
-            <h2 id="alert-title-text" style="font-size:2rem; margin:0 0 15px 0; color:var(--water);">🌊 BOIS DE L'EAU !</h2>
-            <p id="alert-message" style="font-size: 1.2rem; line-height: 1.5; margin:0; font-weight:500;"></p>
+            <p id="alert-message"></p>
             <button id="btn-dismiss" class="got-it-btn" onclick="dismissAlert()">Ok</button>
         </div>
     </div>
@@ -259,7 +259,6 @@
         document.getElementById('lbl-days-clem').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
         document.getElementById('lbl-days-hoa').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
         document.getElementById('btn-back-main').innerText = isHoa ? "⬅ Quay lại" : "⬅ Retour";
-        document.getElementById('alert-title-text').innerText = isHoa ? "🌊 UỐNG NƯỚC ĐI !" : "🌊 BOIS DE L'EAU !";
     }
 
     function getLocalDateStringFromOffset(offset) {
