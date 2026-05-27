@@ -60,7 +60,7 @@
 
         /* Zone Boutons + et - */
         .adjust-actions { display: flex; justify-content: space-between; width: 100%; padding: 5px 5px 15px 5px; gap: 15px; }
-        .adjust-btn { flex: 1; height: 55px; border-radius: 14px; border: 2px solid var(--water-deep); font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; background: var(--card); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.2s; }
+        .adjust-btn { flex: 1; height: 55px; border-radius: 14px; border: 2px solid var(--water-deep); font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; background: var(--card); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: margin 0.2s; }
         .adjust-btn:active { background: var(--water-deep); }
 
         /* Gros bouton central de message */
@@ -192,6 +192,10 @@
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Identifiants d'envoi Webpushr (Clé API REST)
+    const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
+    const WEBPUSHR_AUTH_TOKEN = "73305"; // Ton Auth Token Webpushr pour autoriser l'envoi
+
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
     let currentReminderId = null; 
@@ -226,6 +230,11 @@
         switchView('main-view');
         applyTranslations();
         
+        // Assigner l'identifiant personnalisé à l'appareil pour Webpushr
+        if (typeof window.webpushr !== 'undefined') {
+            window.webpushr('setup', { 'user_id': currentUser });
+        }
+        
         loadData();
         checkOfflineReminders(); 
         listenRealtime();
@@ -250,17 +259,18 @@
     }
 
     function applyTranslations() {
-        const isHoa = (currentUser === "Hoa");
-        document.getElementById('display-profile').innerText = isHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
-        document.getElementById('btn-7').innerText = isHoa ? "Thay đổi" : "Changer";
-        document.getElementById('main-action-text').innerText = isHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
+        const isHoa = (currentUser === "Phù" || currentUser === "Hoa"); // Supporte la détection propre
+        const isActualHoa = (currentUser === "Hoa");
+        document.getElementById('display-profile').innerText = isActualHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
+        document.getElementById('btn-7').innerText = isActualHoa ? "Thay đổi" : "Changer";
+        document.getElementById('main-action-text').innerText = isActualHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
         
-        document.getElementById('title-data-page').innerText = isHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
-        document.getElementById('lbl-goal-clem').innerText = isHoa ? "Mục tiêu Clément" : "Objectif Clément";
-        document.getElementById('lbl-goal-hoa').innerText = isHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
-        document.getElementById('lbl-days-clem').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
-        document.getElementById('lbl-days-hoa').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
-        document.getElementById('btn-back-main').innerText = isHoa ? "⬅ Quay lại" : "⬅ Retour";
+        document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
+        document.getElementById('lbl-goal-clem').innerText = isActualHoa ? "Mục tiêu Clément" : "Objectif Clément";
+        document.getElementById('lbl-goal-hoa').innerText = isActualHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
+        document.getElementById('lbl-days-clem').innerText = isActualHoa ? "Số ngày hoàn thành" : "Jours complétés";
+        document.getElementById('lbl-days-hoa').innerText = isActualHoa ? "Số ngày hoàn thành" : "Jours complétés";
+        document.getElementById('btn-back-main').innerText = isActualHoa ? "⬅ Quay lại" : "⬅ Retour";
     }
 
     function getLocalDateStringFromOffset(offset) {
@@ -339,7 +349,7 @@
             user_name: currentUser,
             amount_cl: amount,
             timezone: currentUser === 'Clément' ? 'Europe/Paris' : 'Asia/Ho_Chi_Minh'
-        }]);
+         }]);
 
         if (!error) {
             const toast = document.getElementById('toast');
@@ -374,10 +384,31 @@
             customMsg = defaultMessages[targetUser];
         }
         
+        // 1. Enregistrement classique dans Supabase pour votre historique/vue in-app
         await supabaseClient.from('water_reminders').insert([{ 
             sender: currentUser,
             message: customMsg
         }]);
+
+        // 2. ENVOI DE LA VRAIE NOTIFICATION NATIVE VIA WEBPUSHR
+        try {
+            await fetch('https://api.webpushr.com/v1/notification/send/sid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'webpushrKey': WEBPUSHR_KEY,
+                    'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
+                },
+                body: JSON.stringify({
+                    "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
+                    "message": customMsg,
+                    "target_sid": targetUser, // Cible l'appareil tagué du prénom opposé
+                    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
+                })
+            });
+        } catch (e) {
+            console.error("Erreur d'envoi de la notification Webpushr", e);
+        }
 
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
