@@ -188,7 +188,7 @@
 
     // Identifiants d'envoi Webpushr (Clé API REST)
     const WEBPUSHR_KEY = "a703933276d8d98609dd34dc9412be84";
-    const WEBPUSHR_AUTH_TOKEN = "121626"; // Ton Auth Token Webpushr pour autoriser l'envoi
+    const WEBPUSHR_AUTH_TOKEN = "121626";
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
@@ -224,7 +224,6 @@
         switchView('main-view');
         applyTranslations();
         
-        // Assigner l'identifiant personnalisé à l'appareil pour Webpushr
         if (typeof window.webpushr !== 'undefined') {
             window.webpushr('setup', { 'user_id': currentUser });
         }
@@ -253,7 +252,6 @@
     }
 
     function applyTranslations() {
-        const isHoa = (currentUser === "Phù" || currentUser === "Hoa"); // Supporte la détection propre
         const isActualHoa = (currentUser === "Hoa");
         document.getElementById('display-profile').innerText = isActualHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
         document.getElementById('btn-7').innerText = isActualHoa ? "Thay đổi" : "Changer";
@@ -378,13 +376,11 @@
             customMsg = defaultMessages[targetUser];
         }
         
-        // 1. Enregistrement classique dans Supabase pour votre historique/vue in-app
         await supabaseClient.from('water_reminders').insert([{ 
             sender: currentUser,
             message: customMsg
         }]);
 
-        // 2. ENVOI DE LA VRAIE NOTIFICATION NATIVE VIA WEBPUSHR
         try {
             await fetch('https://api.webpushr.com/v1/notification/send/sid', {
                 method: 'POST',
@@ -396,7 +392,7 @@
                 body: JSON.stringify({
                     "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
                     "message": customMsg,
-                    "target_sid": targetUser, // Cible l'appareil tagué du prénom opposé
+                    "target_sid": targetUser,
                     "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
                 })
             });
@@ -468,20 +464,29 @@
     });
 
     function demanderAutorisationPush() {
-        if (typeof window.webpushr !== 'undefined') {
-            window.webpushr('showPrompt');
-            
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    alert("Notifications activées avec succès ! 🎉");
-                    window.webpushr('setup', { 'user_id': currentUser });
-                } else if (permission === 'denied') {
-                    alert("Les notifications sont bloquées. Vérifie les paramètres du cadenas (🔒) à côté de l'URL.");
-                }
-            });
-        } else {
-            alert("Le système Webpushr n'est pas encore prêt. Patiente 2 secondes ou vérifie que le site utilise bien HTTPS.");
+        console.log("Clic sur la cloche Android");
+        
+        if (!('Notification' in window)) {
+            alert("Ce navigateur ne gère pas les notifications.");
+            return;
         }
+
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                alert("Autorisation acceptée sur Android ! 👍 Enregistrement de l'appareil...");
+                if (typeof window.webpushr !== 'undefined') {
+                    window.webpushr('setup', { 'user_id': currentUser });
+                    window.webpushr('showPrompt');
+                    alert("Appareil lié avec succès à : " + currentUser);
+                } else {
+                    alert("Permission accordée, mais le script Webpushr est bloqué ou long à charger.");
+                }
+            } else if (permission === 'denied') {
+                alert("Les notifications sont bloquées dans Google Chrome. Clique sur l'icône de réglages / cadenas à gauche de l'URL pour réactiver.");
+            }
+        }).catch(err => {
+            alert("Erreur système : " + err);
+        });
     }
 
     function renderCharts() {
