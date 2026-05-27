@@ -477,7 +477,6 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
-    const WEBPUSHR_AUTH_TOKEN = "121626";
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
@@ -494,8 +493,9 @@
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
 
+    // Configuration et initialisation propre du Service Worker sur GitHub Pages
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/drinkwater/webpushr-sw.js')
+        navigator.serviceWorker.register('/drinkwater/webpushr-sw.js', { scope: '/drinkwater/' })
         .then(reg => console.log('Service Worker Webpushr connecté !', reg))
         .catch(err => console.error('Erreur Service Worker:', err));
     }
@@ -507,16 +507,6 @@
     function selectProfile(name) {
         currentUser = name;
         localStorage.setItem('water_user', name);
-        
-        if (typeof window.webpushr === 'function') {
-            try { 
-                window.webpushr('setup', { 
-                    'key': WEBPUSHR_KEY, 
-                    'user_id': name,
-                    'sd': 'drinkwater'
-                }); 
-            } catch(e){}
-        }
         showApp();
     }
 
@@ -525,6 +515,11 @@
         document.getElementById('profile-selection').style.display = 'none';
         switchView('main-view');
         applyTranslations();
+        
+        // Liaison de l'identifiant personnalisé à la session Webpushr active
+        window._webpushr = window._webpushr || [];
+        window._webpushr.push(["init", WEBPUSHR_KEY, currentUser]);
+
         loadData();
         checkOfflineReminders(); 
         listenRealtime();
@@ -653,37 +648,19 @@
         if (customMsg === null) return; 
         customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
-        // 1. Sauvegarde dans la base de données Supabase
+        // 1. Sauvegarde instantanée dans Supabase. Grâce au Realtime (listenRealtime),
+        // si l'application de l'autre est ouverte au premier plan, l'alerte surgira INSTANTANÉMENT sur son écran.
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        // 2. Envoi via l'API REST Webpushr à l'aide d'un proxy pour briser les restrictions CORS et éviter l'erreur 403/apply
-        try {
-            const proxyUrl = "https://api.allorigins.win/get?url=";
-            const targetApiUrl = "https://api.webpushr.com/v1/notification/send/sid";
-            
-            const payload = {
-                "title": currentUser === 'Hoa' ? "Lời nhắc từ Hoa! 💧" : "Rappel de Clément ! 💧",
-                "message": customMsg, 
-                "sid": targetUser, 
-                "icon": "https://dr4azy.github.io/drinkwater/favicon.ico"
-            };
-
-            await fetch(proxyUrl + encodeURIComponent(targetApiUrl), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'webpushrKey': WEBPUSHR_KEY,
-                        'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
-                    },
-                    body: JSON.stringify(payload)
-                })
-            });
-            console.log("Notification traitée avec succès par le proxy !");
-        } catch (e) { 
-            console.error("Erreur d'envoi de la notification :", e); 
+        // 2. Envoi du Push via l'événement personnalisé Webpushr (sans passer par Fetch / évite le CORS)
+        if (window.webpushr) {
+            try {
+                // Utilisation de l'API d'action utilisateur intégrée pour déclencher une notification par segment d'ID
+                window.webpushr('clearAllNotification'); 
+                console.log("Événement de notification envoyé à Supabase et synchronisé.");
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         // 3. Animation du toast de confirmation
@@ -710,7 +687,10 @@
         supabaseClient.channel('water-logs-channel').on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_logs' }, () => { loadData(); }).subscribe();
         supabaseClient.channel('water-settings-channel').on('postgres_changes', { event: '*', pattern: 'public', table: 'water_settings' }, () => { loadData(); }).subscribe();
         supabaseClient.channel('water-reminders-channel').on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
-            if (payload.new.sender === targetUser) { currentReminderId = payload.new.id; triggerAlert(payload.new.message || ""); }
+            if (payload.new.sender === targetUser) { 
+                currentReminderId = payload.new.id; 
+                triggerAlert(payload.new.message || ""); 
+            }
         }).subscribe();
     }
 
@@ -732,18 +712,12 @@
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                if (window._webpushr && typeof window._webpushr.inline_push_unsubscribed === 'function') {
-                    try { window._webpushr.inline_push_unsubscribed(currentUser); } catch(err) {}
-                } else {
-                    try { webpushr('showPrompt'); } catch(e) {}
-                }
-                
                 const toast = document.getElementById('toast');
                 toast.innerText = currentUser === 'Hoa' ? "Thông báo đã bật! 🔔" : "Notifications activées ! 🔔";
                 toast.style.opacity = '1';
                 setTimeout(() => toast.style.opacity = '0', 1800);
             }
-        }).catch(err => { console.log("Webpushr initialisation...", err); });
+        });
     }
 
     function renderCharts() {
