@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>💧 Drink Water Pro</title>
+    <title>Water💧</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Water💧">
     <meta name="theme-color" content="#0f172a">
+    <meta name="background-color" content="#0f172a">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,12 +49,12 @@
         .card-info .stats { margin-top: 4px; font-size: 1.3rem; font-weight: bold; }
         .card-info .percentage { font-size: 0.95rem; color: var(--text-secondary); margin-left: 5px; }
 
-        /* Zone Boutons d'ajustement + et - (Placée au-dessus du gros bouton) */
+        /* Zone Boutons d'ajustement + et - */
         .adjust-actions { display: flex; justify-content: space-between; width: 100%; padding: 5px 5px 15px 5px; gap: 15px; }
         .adjust-btn { flex: 1; height: 55px; border-radius: 14px; border: 2px solid var(--water-deep); font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; background: var(--card); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.2s; }
         .adjust-btn:active { background: var(--water-deep); }
 
-        /* Gros bouton central 1 (Agrandit légèrement, texte au lieu de l'icône) */
+        /* Gros bouton central 1 */
         .center-action { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 15px 0; }
         .main-btn-1 { width: 210px; height: 210px; border-radius: 50%; background: linear-gradient(135deg, var(--water), var(--water-deep)); border: none; color: white; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 0 30px rgba(56,189,248,0.4); display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; line-height: 1.4; transition: transform 0.1s; }
         .main-btn-1:active { transform: scale(0.94); }
@@ -64,7 +66,7 @@
         .data-box-value { font-size: 1.4rem; font-weight: bold; color: var(--water); }
         .chart-container-large { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 240px; }
         
-        /* Graphiques hebdomadaires empilés l'un au-dessus de l'autre */
+        /* Graphiques hebdomadaires empilés à la verticale */
         .charts-flex-column { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         .chart-container-vertical { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
         
@@ -73,14 +75,14 @@
         /* Overlay d'alerte */
         #alert-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         .alert-box { background: var(--card); border: 3px solid var(--water); padding: 35px 25px; border-radius: 24px; max-width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .got-it-btn { background: var(--water); color: #000; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 12px; margin-top: 20px; cursor: pointer; width: 100%; }
+        .got-it-btn { background: var(--water); color: #000; border: none; padding: 14px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 12px; margin-top: 25px; cursor: pointer; width: 100%; }
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="profile-selection">
-        <h1 style="color:var(--water); margin-bottom:5px;">💧 Drink Water</h1>
+        <h1 style="color:var(--water); margin-bottom:5px;">💧 Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
         <button class="profile-btn" onclick="selectProfile('Clément')">👨‍💻 Clément</button>
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
@@ -165,9 +167,9 @@
 
     <div id="alert-overlay">
         <div class="alert-box">
-            <h2 id="alert-title-text" style="font-size:2rem; margin:0 0 10px 0; color:var(--water);">🌊 BOIS DE L'EAU !</h2>
-            <p id="alert-message" style="font-size: 1.1rem; line-height: 1.4; margin:0;"></p>
-            <button id="btn-dismiss" class="got-it-btn" onclick="dismissAlert()">C'est fait ! 👍</button>
+            <h2 id="alert-title-text" style="font-size:2rem; margin:0 0 15px 0; color:var(--water);">🌊 BOIS DE L'EAU !</h2>
+            <p id="alert-message" style="font-size: 1.2rem; line-height: 1.5; margin:0; font-weight:500;"></p>
+            <button id="btn-dismiss" class="got-it-btn" onclick="dismissAlert()">Ok</button>
         </div>
     </div>
 
@@ -182,9 +184,26 @@
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
     
-    // Application stricte des fuseaux horaires (Clément en UTC+2, Hoa en UTC+7)
     const timeoffsets = { 'Clément': 2, 'Hoa': 7 };
     
+    // Banque de messages personnalisés aléatoires
+    const messagesMeteo = {
+        'Clément': [
+            "Hey ! C'est l'heure de boire un grand verre d'eau ! 💧",
+            "Ton corps a soif, écoute les conseils de Hoa ! 🌊",
+            "Glou glou... Remplis ton niveau d'énergie maintenant ! ⚡",
+            "Un petit effort, ton objectif de la journée t'attend ! 🎯",
+            "Une gorgée pour la santé, n'attends pas d'avoir soif ! 🐳"
+        ],
+        'Hoa': [
+            "Đến lúc uống một cốc nước thật lớn rồi đó! 💧",
+            "Cơ thể đang khát nước nè, nghe lời Clément đi nhé! 🌊",
+            "Uống nước để giữ năng lượng và làn da đẹp nào! ⚡",
+            "Một chút cố gắng để hoàn thành mục tiêu hôm nay! 🎯",
+            "Uống một ngụm nước ngay vì sức khỏe của bạn nhé! 🐳"
+        ]
+    };
+
     let appState = {
         goals: { 'Clément': 150, 'Hoa': 150 },
         allLogs: []
@@ -243,10 +262,8 @@
         document.getElementById('lbl-days-hoa').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
         document.getElementById('btn-back-main').innerText = isHoa ? "⬅ Quay lại" : "⬅ Retour";
         document.getElementById('alert-title-text').innerText = isHoa ? "🌊 UỐNG NƯỚC ĐI !" : "🌊 BOIS DE L'EAU !";
-        document.getElementById('btn-dismiss').innerText = isHoa ? "Đã xong! 👍" : "C'est fait ! 👍";
     }
 
-    // Calcul de la date locale courante basée sur le décalage UTC fixe de l'utilisateur
     function getLocalDateStringFromOffset(offset) {
         const utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
         const localTime = new Date(utc + (3600000 * offset));
@@ -296,7 +313,6 @@
     }
 
     function calculateStreaks() {
-        const streaks = { 'Clément': 0, 'Hoa': 0 };
         const dailyAggregates = { 'Clément': {}, 'Hoa': {} };
 
         appState.allLogs.forEach(log => {
@@ -315,7 +331,6 @@
                     userDaysSuccess++;
                 }
             });
-            streaks[user] = userDaysSuccess;
             document.getElementById(`streak-${user}`).innerText = `${userDaysSuccess} ${currentUser === 'Hoa' ? 'ngày' : 'j'}`;
         });
     }
@@ -348,8 +363,15 @@
         }
     }
 
+    // Envoi du rappel d'eau avec indexation d'un message personnalisé aléatoire
     async function sendWaterReminder() {
-        await supabaseClient.from('water_reminders').insert([{ sender: currentUser }]);
+        const list = messagesMeteo[targetUser]; 
+        const randomMsg = list[Math.floor(Math.random() * list.length)];
+        
+        await supabaseClient.from('water_reminders').insert([{ 
+            sender: currentUser,
+            message: randomMsg // Transmis à l'autre via la base de données
+        }]);
     }
 
     function listenRealtime() {
@@ -365,17 +387,14 @@
             event: 'INSERT', pattern: 'public', table: 'water_reminders'
         }, payload => {
             if (payload.new.sender === targetUser) {
-                triggerAlert(payload.new.sender);
+                // Utilise le message personnalisé généré aléatoirement par l'autre
+                triggerAlert(payload.new.message || "");
             }
         }).subscribe();
     }
 
-    function triggerAlert(sender) {
-        if (currentUser === "Hoa") {
-            document.getElementById('alert-message').innerHTML = `<b>${sender}</b> nhắc bạn rằng đã đến lúc phải uống nước ngay lập tức!`;
-        } else {
-            document.getElementById('alert-message').innerHTML = `<b>${sender}</b> te rappelle qu'il est temps de t'hydrater immédiatement !`;
-        }
+    function triggerAlert(customText) {
+        document.getElementById('alert-message').innerHTML = customText;
         document.getElementById('alert-overlay').style.display = 'flex';
         try { document.getElementById('water-sound').play(); } catch(e){}
     }
@@ -391,7 +410,7 @@
         if(chartWeekClemInstance) chartWeekClemInstance.destroy();
         if(chartWeekHoaInstance) chartWeekHoaInstance.destroy();
 
-        // --- 1. Graphique Journée à précision 30 minutes ---
+        // --- 1. Graphique Journée (Pas de mention 30min dans le titre) ---
         const halfHoursLabels = [];
         for (let h = 0; h < 24; h++) {
             halfHoursLabels.push(`${h}h00`);
@@ -438,14 +457,8 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { 
-                    title: { display: true, text: isHoa ? 'Tiến trình hôm nay (Mỗi 30 phút)' : 'Progression de la journée (Toutes les 30 min)', color: '#fff' }, 
-                    legend: { 
-                        labels: { 
-                            color: '#fff',
-                            boxWidth: 15, // Plus fin
-                            boxHeight: 2,  // Utilise un trait plutôt qu'un rectangle pour la légende
-                        } 
-                    } 
+                    title: { display: true, text: isHoa ? 'Tiến trình hôm nay' : 'Progression de la journée', color: '#fff' }, 
+                    legend: { labels: { color: '#fff', boxWidth: 15, boxHeight: 2 } } // Trait fin pour la légende
                 },
                 scales: { 
                     x: { ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } } }, 
