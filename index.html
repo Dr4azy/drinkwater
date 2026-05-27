@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script>(function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));webpushr('setup',{'key':'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs' });
+    <script>
+        // Initialisation standard et sécurisée du SDK Webpushr
+        (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));
+        webpushr('setup',{'key':'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs' });
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water</title>
     
-    <!-- Configuration Application Mobile (PWA / Écran d'accueil) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,11 +17,9 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
-    <!-- Liens pour les Logos / Icônes d'écran d'accueil -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
 
-    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -89,7 +89,6 @@
 </head>
 <body>
 
-    <!-- CHOIX PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -97,7 +96,6 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
-    <!-- VUE PRINCIPALE -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
@@ -132,7 +130,6 @@
         </div>
     </div>
 
-    <!-- VUE DATA -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
@@ -177,7 +174,6 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
-    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <p id="alert-message"></p>
@@ -193,7 +189,6 @@
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Identifiants d'envoi Webpushr (Clé API REST)
     const WEBPUSHR_KEY = "a703933276d8d98609dd34dc9412be84";
     const WEBPUSHR_AUTH_TOKEN = "121626";
 
@@ -202,20 +197,22 @@
     let currentReminderId = null; 
     
     const timeoffsets = { 'Clément': 2, 'Hoa': 7 };
-    
     const defaultMessages = {
         'Clément': "Hey ! C'est l'heure de boire un grand verre d'eau ! 💧",
         'Hoa': "Đến lúc uống một cốc nước thật lớn rồi đó! 💧"
     };
 
-    let appState = {
-        goals: { 'Clément': 150, 'Hoa': 150 },
-        allLogs: []
-    };
-
+    let appState = { goals: { 'Clément': 150, 'Hoa': 150 }, allLogs: [] };
     let chartDayInstance = null;
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
+
+    // Enregistrement manuel et explicite du Service Worker Webpushr pour Android
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/webpushr-sw.js')
+        .then(reg => console.log('Service Worker Webpushr connecté avec succès !', reg))
+        .catch(err => console.error('Erreur Service Worker:', err));
+    }
 
     if (currentUser) showApp();
 
@@ -230,11 +227,6 @@
         document.getElementById('profile-selection').style.display = 'none';
         switchView('main-view');
         applyTranslations();
-        
-        if (typeof window.webpushr !== 'undefined' && typeof window.webpushr === 'function') {
-            window.webpushr('setup', { 'user_id': currentUser });
-        }
-        
         loadData();
         checkOfflineReminders(); 
         listenRealtime();
@@ -243,9 +235,7 @@
     function switchView(viewId) {
         document.getElementById('main-view').style.display = (viewId === 'main-view') ? 'flex' : 'none';
         document.getElementById('data-view').style.display = (viewId === 'data-view') ? 'flex' : 'none';
-        if(viewId === 'data-view') {
-            setTimeout(renderCharts, 100);
-        }
+        if(viewId === 'data-view') { setTimeout(renderCharts, 100); }
     }
 
     function logout() {
@@ -263,7 +253,6 @@
         document.getElementById('display-profile').innerText = isActualHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
         document.getElementById('btn-7').innerText = isActualHoa ? "Thay đổi" : "Changer";
         document.getElementById('main-action-text').innerText = isActualHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
-        
         document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
         document.getElementById('lbl-goal-clem').innerText = isActualHoa ? "Mục tiêu Clément" : "Objectif Clément";
         document.getElementById('lbl-goal-hoa').innerText = isActualHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
@@ -274,8 +263,7 @@
 
     function getLocalDateStringFromOffset(offset) {
         const utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
-        const localTime = new Date(utc + (3600000 * offset));
-        return localTime.toISOString().split('T')[0];
+        return new Date(utc + (3600000 * offset)).toISOString().split('T')[0];
     }
 
     async function loadData() {
@@ -286,10 +274,8 @@
                 document.getElementById(`val-goal-${s.user_name}`).innerText = formatWater(s.daily_goal_cl);
             });
         }
-
         const { data: logs } = await supabaseClient.from('water_logs').select('*').order('created_at', { ascending: true });
         appState.allLogs = logs || [];
-        
         calculateRealtimeMetrics();
     }
 
@@ -311,23 +297,18 @@
             const total = Math.max(0, totals[user]);
             const goal = appState.goals[user];
             const pct = Math.min(100, Math.round((total / goal) * 100));
-
             document.getElementById(`vol-${user}`).innerText = formatWater(total);
             document.getElementById(`pct-${user}`).innerText = `(${pct}%)`;
             document.getElementById(`glass-fill-${user}`).style.height = `${pct}%`;
         });
-
         calculateStreaks();
     }
 
     function calculateStreaks() {
         const dailyAggregates = { 'Clément': {}, 'Hoa': {} };
-
         appState.allLogs.forEach(log => {
             const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
-            const userOffset = timeoffsets[log.user_name];
-            const logLocalDateStr = new Date(logUtc + (3600000 * userOffset)).toISOString().split('T')[0];
-            
+            const logLocalDateStr = new Date(logUtc + (3600000 * timeoffsets[log.user_name])).toISOString().split('T')[0];
             if (!dailyAggregates[log.user_name][logLocalDateStr]) dailyAggregates[log.user_name][logLocalDateStr] = 0;
             dailyAggregates[log.user_name][logLocalDateStr] += log.amount_cl;
         });
@@ -335,9 +316,7 @@
         ['Clément', 'Hoa'].forEach(user => {
             let userDaysSuccess = 0;
             Object.keys(dailyAggregates[user]).forEach(dateKey => {
-                if (dailyAggregates[user][dateKey] >= appState.goals[user]) {
-                    userDaysSuccess++;
-                }
+                if (dailyAggregates[user][dateKey] >= appState.goals[user]) userDaysSuccess++;
             });
             document.getElementById(`streak-${user}`).innerText = `${userDaysSuccess} ${currentUser === 'Hoa' ? 'ngày' : 'j'}`;
         });
@@ -345,11 +324,8 @@
 
     async function logWater(amount) {
         const { error } = await supabaseClient.from('water_logs').insert([{
-            user_name: currentUser,
-            amount_cl: amount,
-            timezone: currentUser === 'Clément' ? 'Europe/Paris' : 'Asia/Ho_Chi_Minh'
+            user_name: currentUser, amount_cl: amount, timezone: currentUser === 'Clément' ? 'Europe/Paris' : 'Asia/Ho_Chi_Minh'
          }]);
-
         if (!error) {
             const toast = document.getElementById('toast');
             toast.innerText = currentUser === 'Hoa' ? "Đã ghi nhận! 👍" : "Enregistré ! 👍";
@@ -363,49 +339,30 @@
         const promptMsg = currentUser === 'Hoa' ? `Mục tiêu mới cho ${user} (cL):` : `Nouvel objectif pour ${user} (en cL) :`;
         const newGoal = prompt(promptMsg, appState.goals[user]);
         if (newGoal && !isNaN(newGoal)) {
-            const { error } = await supabaseClient.from('water_settings').upsert({
-                user_name: user,
-                daily_goal_cl: parseInt(newGoal)
-            });
+            const { error } = await supabaseClient.from('water_settings').upsert({ user_name: user, daily_goal_cl: parseInt(newGoal) });
             if (!error) loadData();
         }
     }
 
     async function sendWaterReminder() {
         const isHoa = (currentUser === 'Hoa');
-        const promptTitle = isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :";
-        
-        let customMsg = prompt(promptTitle, "");
+        let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
         if (customMsg === null) return; 
+        customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
-        customMsg = customMsg.trim();
-        if (customMsg === "") {
-            customMsg = defaultMessages[targetUser];
-        }
-        
-        await supabaseClient.from('water_reminders').insert([{ 
-            sender: currentUser,
-            message: customMsg
-        }]);
+        await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
         try {
             await fetch('https://api.webpushr.com/v1/notification/send/sid', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'webpushrKey': WEBPUSHR_KEY,
-                    'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
-                },
+                headers: { 'Content-Type': 'application/json', 'webpushrKey': WEBPUSHR_KEY, 'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN },
                 body: JSON.stringify({
                     "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
-                    "message": customMsg,
-                    "target_sid": targetUser,
+                    "message": customMsg, "target_sid": targetUser,
                     "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
                 })
             });
-        } catch (e) {
-            console.error("Erreur d'envoi de la notification Webpushr", e);
-        }
+        } catch (e) { console.error(e); }
 
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
@@ -414,17 +371,10 @@
     }
 
     async function checkOfflineReminders() {
-        const { data: latestReminders, error } = await supabaseClient
-            .from('water_reminders')
-            .select('*')
-            .eq('sender', targetUser)
-            .order('id', { ascending: false })
-            .limit(1);
-
+        const { data: latestReminders, error } = await supabaseClient.from('water_reminders').select('*').eq('sender', targetUser).order('id', { ascending: false }).limit(1);
         if (!error && latestReminders && latestReminders.length > 0) {
             const lastReminder = latestReminders[0];
             const lastSeenId = localStorage.getItem(`water_last_seen_reminder_${currentUser}`);
-
             if (!lastSeenId || parseInt(lastSeenId) < lastReminder.id) {
                 currentReminderId = lastReminder.id;
                 triggerAlert(lastReminder.message);
@@ -433,21 +383,10 @@
     }
 
     function listenRealtime() {
-        supabaseClient.channel('water-logs-channel').on('postgres_changes', {
-            event: 'INSERT', pattern: 'public', table: 'water_logs'
-        }, () => { loadData(); }).subscribe();
-
-        supabaseClient.channel('water-settings-channel').on('postgres_changes', {
-            event: '*', pattern: 'public', table: 'water_settings'
-        }, () => { loadData(); }).subscribe();
-
-        supabaseClient.channel('water-reminders-channel').on('postgres_changes', {
-            event: 'INSERT', pattern: 'public', table: 'water_reminders'
-        }, payload => {
-            if (payload.new.sender === targetUser) {
-                currentReminderId = payload.new.id;
-                triggerAlert(payload.new.message || "");
-            }
+        supabaseClient.channel('water-logs-channel').on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_logs' }, () => { loadData(); }).subscribe();
+        supabaseClient.channel('water-settings-channel').on('postgres_changes', { event: '*', pattern: 'public', table: 'water_settings' }, () => { loadData(); }).subscribe();
+        supabaseClient.channel('water-reminders-channel').on('postgres_changes', { event: 'INSERT', pattern: 'public', table: 'water_reminders' }, payload => {
+            if (payload.new.sender === targetUser) { currentReminderId = payload.new.id; triggerAlert(payload.new.message || ""); }
         }).subscribe();
     }
 
@@ -458,21 +397,14 @@
     }
 
     function dismissAlert() {
-        if (currentReminderId) {
-            localStorage.setItem(`water_last_seen_reminder_${currentUser}`, currentReminderId);
-        }
+        if (currentReminderId) { localStorage.setItem(`water_last_seen_reminder_${currentUser}`, currentReminderId); }
         document.getElementById('alert-overlay').style.display = 'none';
     }
 
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible" && currentUser) {
-            checkOfflineReminders();
-        }
-    });
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && currentUser) { checkOfflineReminders(); } });
 
     function demanderAutorisationPush() {
         console.log("Clic sur la cloche Android");
-        
         if (!('Notification' in window)) {
             alert("Ce navigateur ne gère pas les notifications.");
             return;
@@ -480,48 +412,34 @@
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                alert("Autorisation acceptée sur Android ! 👍 Configuration de Webpushr...");
+                alert("Autorisation accordée ! 🚀 Demande d'affichage du prompt officiel...");
                 
-                // Vérification de sécurité stricte pour éviter l'erreur .apply()
+                // Force l'initialisation immédiate si webpushr est prêt
                 if (typeof window.webpushr === 'function') {
-                    try {
-                        window.webpushr('setup', { 'user_id': currentUser });
-                        window.webpushr('showPrompt');
-                        alert("Appareil lié avec succès à : " + currentUser);
-                    } catch (e) {
-                        console.error("Erreur Webpushr :", e);
-                        alert("Le système de notification se synchronise en tâche de fond. Réessaye dans 3 secondes ! ⏳");
-                    }
+                    window.webpushr('setup', { 'user_id': currentUser });
+                    window.webpushr('showPrompt');
                 } else {
-                    // Si le SDK n'a pas fini sa mutation, on insère de façon sécurisée dans la file d'attente
+                    // Sinon, on injecte de manière sécurisée dans la file d'attente globale
                     window.webpushr = window.webpushr || function() { (window.webpushr.q = window.webpushr.q || []).push(arguments) };
                     window.webpushr('setup', { 'user_id': currentUser });
-                    alert("Appareil enregistré ! Il sera visible sur Webpushr dès la prochaine ouverture.");
+                    window.webpushr('showPrompt');
                 }
             } else if (permission === 'denied') {
-                alert("Les notifications sont bloquées dans Google Chrome. Clique sur l'icône de réglages / cadenas à gauche de l'URL pour réactiver.");
+                alert("Les notifications sont bloquées dans Google Chrome. Cliquez sur l'icône de cadenas à gauche de l'adresse pour les réactiver.");
             }
-        }).catch(err => {
-            alert("Erreur système : " + err);
-        });
+        }).catch(err => { alert("Erreur système : " + err); });
     }
 
     function renderCharts() {
         const isHoa = (currentUser === 'Hoa');
-        
         if(chartDayInstance) chartDayInstance.destroy();
         if(chartWeekClemInstance) chartWeekClemInstance.destroy();
         if(chartWeekHoaInstance) chartWeekHoaInstance.destroy();
 
         const halfHoursLabels = [];
-        for (let h = 0; h < 24; h++) {
-            halfHoursLabels.push(`${h}h00`);
-            halfHoursLabels.push(`${h}h30`);
-        }
+        for (let h = 0; h < 24; h++) { halfHoursLabels.push(`${h}h00`, `${h}h30`); }
         
-        const slotsClem = Array(48).fill(0);
-        const slotsHoa = Array(48).fill(0);
-
+        const slotsClem = Array(48).fill(0), slotsHoa = Array(48).fill(0);
         const dateStrClem = getLocalDateStringFromOffset(timeoffsets['Clément']);
         const dateStrHoa = getLocalDateStringFromOffset(timeoffsets['Hoa']);
 
@@ -529,15 +447,13 @@
             const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
             const userOffset = log.user_name === 'Clément' ? timeoffsets['Clément'] : timeoffsets['Hoa'];
             const localDate = new Date(logUtc + (3600000 * userOffset));
-            const logLocalDateStr = localDate.toISOString().split('T')[0];
-            
-            const hours = localDate.getHours();
-            const minutes = localDate.getMinutes();
-            const slotIdx = (hours * 2) + (minutes >= 30 ? 1 : 0);
-
-            if (slotIdx >= 0 && slotIdx < 48) {
-                if (log.user_name === 'Clément' && logLocalDateStr === dateStrClem) slotsClem[slotIdx] += log.amount_cl;
-                if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHoa) slotsHoa[slotIdx] += log.amount_cl;
+            if ((log.user_name === 'Clément' && localDate.toISOString().split('T')[0] === dateStrClem) || 
+                (log.user_name === 'Hoa' && localDate.toISOString().split('T')[0] === dateStrHoa)) {
+                const slotIdx = (localDate.getHours() * 2) + (localDate.getMinutes() >= 30 ? 1 : 0);
+                if (slotIdx >= 0 && slotIdx < 48) {
+                    if (log.user_name === 'Clément') slotsClem[slotIdx] += log.amount_cl;
+                    if (log.user_name === 'Hoa') slotsHoa[slotIdx] += log.amount_cl;
+                }
             }
         });
 
@@ -545,8 +461,7 @@
         const cumulativeClem = slotsClem.map(v => { cumClem += v; return Math.max(0, cumClem); });
         const cumulativeHoa = slotsHoa.map(v => { cumHoa += v; return Math.max(0, cumHoa); });
 
-        const ctxDay = document.getElementById('dayChart').getContext('2d');
-        chartDayInstance = new Chart(ctxDay, {
+        chartDayInstance = new Chart(document.getElementById('dayChart').getContext('2d'), {
             type: 'line',
             data: {
                 labels: halfHoursLabels,
@@ -556,26 +471,16 @@
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    title: { display: true, text: isHoa ? 'Tiến trình hôm nay' : 'Progression de la journée', color: '#fff' }, 
-                    legend: { labels: { color: '#fff', boxWidth: 15, boxHeight: 2 } }
-                },
-                scales: { 
-                    x: { ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } } }, 
-                    y: { ticks: { color: '#94a3b8' } } 
-                }
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: isHoa ? 'Tiến trình hôm nay' : 'Progression de la journée', color: '#fff' }, legend: { labels: { color: '#fff', boxWidth: 15 } } },
+                scales: { x: { ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } } }, y: { ticks: { color: '#94a3b8' } } }
             }
         });
 
         const last7DaysLabels = [];
-        const weeklyDataClem = Array(7).fill(0);
-        const weeklyDataHoa = Array(7).fill(0);
-
+        const weeklyDataClem = Array(7).fill(0), weeklyDataHoa = Array(7).fill(0);
         for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
+            const d = new Date(); d.setDate(d.getDate() - i);
             last7DaysLabels.push(d.toLocaleDateString(isHoa ? 'vi-VN' : 'fr-FR', { weekday: 'short', day: 'numeric' }));
         }
 
@@ -583,51 +488,26 @@
             const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
             const userOffset = timeoffsets[log.user_name];
             const logDate = new Date(logUtc + (3600000 * userOffset));
-            
             const todayLocal = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000) + (3600000 * userOffset));
-            todayLocal.setHours(0,0,0,0);
-            logDate.setHours(0,0,0,0);
-            
-            const diffTime = todayLocal - logDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
+            todayLocal.setHours(0,0,0,0); logDate.setHours(0,0,0,0);
+            const diffDays = Math.floor((todayLocal - logDate) / (1000 * 60 * 60 * 24));
             if (diffDays < 7 && diffDays >= 0) {
                 const index = 6 - diffDays;
-                if (index >= 0 && index < 7) {
-                    if (log.user_name === 'Clément') weeklyDataClem[index] += log.amount_cl;
-                    if (log.user_name === 'Hoa') weeklyDataHoa[index] += log.amount_cl;
-                }
+                if (log.user_name === 'Clément') weeklyDataClem[index] += log.amount_cl;
+                if (log.user_name === 'Hoa') weeklyDataHoa[index] += log.amount_cl;
             }
         });
 
-        const ctxWeekClem = document.getElementById('weekChartClem').getContext('2d');
-        chartWeekClemInstance = new Chart(ctxWeekClem, {
+        chartWeekClemInstance = new Chart(document.getElementById('weekChartClem').getContext('2d'), {
             type: 'bar',
-            data: {
-                labels: last7DaysLabels,
-                datasets: [{ label: 'Clem (cL)', data: weeklyDataClem.map(v => Math.max(0, v)), backgroundColor: '#38bdf8' }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { title: { display: true, text: isHoa ? 'Tuần Clément' : 'Semaine Clément', color: '#fff' }, legend: { display: false } },
-                scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
-            }
+            data: { labels: last7DaysLabels, datasets: [{ data: weeklyDataClem, backgroundColor: '#38bdf8' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: isHoa ? 'Tuần Clément' : 'Semaine Clément', color: '#fff' }, legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } } }
         });
 
-        const ctxWeekHoa = document.getElementById('weekChartHoa').getContext('2d');
-        chartWeekHoaInstance = new Chart(ctxWeekHoa, {
+        chartWeekHoaInstance = new Chart(document.getElementById('weekChartHoa').getContext('2d'), {
             type: 'bar',
-            data: {
-                labels: last7DaysLabels,
-                datasets: [{ label: 'Hoa (cL)', data: weeklyDataHoa.map(v => Math.max(0, v)), backgroundColor: '#f43f5e' }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa' : 'Semaine Hoa', color: '#fff' }, legend: { display: false } },
-                scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
-            }
+            data: { labels: last7DaysLabels, datasets: [{ data: weeklyDataHoa, backgroundColor: '#f43f5e' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa' : 'Semaine Hoa', color: '#fff' }, legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
         });
     }
 </script>
