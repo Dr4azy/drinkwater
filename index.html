@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water💧</title>
     
+    <!-- Configuration Application Mobile Android -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Water💧">
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
+    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -81,6 +83,7 @@
 </head>
 <body>
 
+    <!-- ÉCRAN CHOIX DU PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">💧 Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -88,6 +91,7 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
+    <!-- ÉCRAN PRINCIPAL -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
@@ -95,6 +99,7 @@
             <button id="btn-6" class="nav-btn-6" onclick="switchView('data-view')">📊</button>
         </div>
 
+        <!-- Encadré Clément -->
         <div class="user-card" id="card-clement">
             <div class="glass-container"><div id="glass-fill-Clément" class="glass-water"></div></div>
             <div class="card-info">
@@ -103,6 +108,7 @@
             </div>
         </div>
 
+        <!-- Encadré Hoa -->
         <div class="user-card" id="card-hoa">
             <div class="glass-container"><div id="glass-fill-Hoa" class="glass-water"></div></div>
             <div class="card-info">
@@ -111,22 +117,26 @@
             </div>
         </div>
 
+        <!-- Boutons d'ajustement -->
         <div class="adjust-actions">
             <button class="adjust-btn" onclick="logWater(25)">+25 cL</button>
             <button class="adjust-btn" onclick="logWater(-25)">-25 cL</button>
         </div>
 
+        <!-- Gros bouton de rappel principal -->
         <div class="center-action">
             <button id="main-action-text" class="main-btn-1" onclick="sendWaterReminder()">Rappeler à l'autre de boire</button>
         </div>
     </div>
 
+    <!-- ÉCRAN DATA -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
             <div></div>
         </div>
 
+        <!-- Paramétrage d'objectifs -->
         <div class="data-grid-row">
             <div class="data-box" onclick="changeGoal('Clément')" style="cursor:pointer; border: 1px solid rgba(255,255,255,0.1);">
                 <div class="data-box-title" id="lbl-goal-clem">Objectif Clément</div>
@@ -138,6 +148,7 @@
             </div>
         </div>
 
+        <!-- Jours complétés -->
         <div class="data-grid-row">
             <div class="data-box">
                 <div class="data-box-title" id="lbl-days-clem">Jours complétés</div>
@@ -149,10 +160,12 @@
             </div>
         </div>
 
+        <!-- Graphique unique Journée -->
         <div class="chart-container-large">
             <canvas id="dayChart"></canvas>
         </div>
 
+        <!-- Graphiques hebdomadaires empilés verticalement -->
         <div class="charts-flex-column">
             <div class="chart-container-vertical">
                 <canvas id="weekChartClem"></canvas>
@@ -165,6 +178,7 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
+    <!-- OVERLAY ALERTE RAPPEL AVEC BOUTON OK -->
     <div id="alert-overlay">
         <div class="alert-box">
             <h2 id="alert-title-text" style="font-size:2rem; margin:0 0 15px 0; color:var(--water);">🌊 BOIS DE L'EAU !</h2>
@@ -183,10 +197,10 @@
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
+    let currentReminderId = null; // Stocke l'ID du rappel en cours d'affichage
     
     const timeoffsets = { 'Clément': 2, 'Hoa': 7 };
     
-    // Banque de messages personnalisés aléatoires
     const messagesMeteo = {
         'Clément': [
             "Hey ! C'est l'heure de boire un grand verre d'eau ! 💧",
@@ -228,6 +242,7 @@
         applyTranslations();
         
         loadData();
+        checkOfflineReminders(); // Vérification des rappels manqués pendant la fermeture
         listenRealtime();
     }
 
@@ -363,15 +378,37 @@
         }
     }
 
-    // Envoi du rappel d'eau avec indexation d'un message personnalisé aléatoire
+    // Sélectionne et transmet le message personnalisé
     async function sendWaterReminder() {
         const list = messagesMeteo[targetUser]; 
         const randomMsg = list[Math.floor(Math.random() * list.length)];
         
         await supabaseClient.from('water_reminders').insert([{ 
             sender: currentUser,
-            message: randomMsg // Transmis à l'autre via la base de données
+            message: randomMsg
         }]);
+    }
+
+    // VÉRIFICATION AUTOMATIQUE AU DÉMARRAGE / RETOUR SUR L'APP
+    async function checkOfflineReminders() {
+        // Va chercher le dernier rappel inséré par l'AUTRE utilisateur
+        const { data: latestReminders, error } = await supabaseClient
+            .from('water_reminders')
+            .select('*')
+            .eq('sender', targetUser)
+            .order('id', { ascending: false })
+            .limit(1);
+
+        if (!error && latestReminders && latestReminders.length > 0) {
+            const lastReminder = latestReminders[0];
+            const lastSeenId = localStorage.getItem(`water_last_seen_reminder_${currentUser}`);
+
+            // Si cet ID de rappel n'a jamais été validé sur ce téléphone, on l'affiche !
+            if (!lastSeenId || parseInt(lastSeenId) < lastReminder.id) {
+                currentReminderId = lastReminder.id;
+                triggerAlert(lastReminder.message);
+            }
+        }
     }
 
     function listenRealtime() {
@@ -383,11 +420,12 @@
             event: '*', pattern: 'public', table: 'water_settings'
         }, () => { loadData(); }).subscribe();
 
+        // Écoute en temps réel quand l'app est ouverte
         supabaseClient.channel('water-reminders-channel').on('postgres_changes', {
             event: 'INSERT', pattern: 'public', table: 'water_reminders'
         }, payload => {
             if (payload.new.sender === targetUser) {
-                // Utilise le message personnalisé généré aléatoirement par l'autre
+                currentReminderId = payload.new.id;
                 triggerAlert(payload.new.message || "");
             }
         }).subscribe();
@@ -399,9 +437,20 @@
         try { document.getElementById('water-sound').play(); } catch(e){}
     }
 
+    // Le bouton OK enregistre localement que le message a été vu et ferme l'alerte
     function dismissAlert() {
+        if (currentReminderId) {
+            localStorage.setItem(`water_last_seen_reminder_${currentUser}`, currentReminderId);
+        }
         document.getElementById('alert-overlay').style.display = 'none';
     }
+
+    // Vérifier à nouveau si l'utilisateur change d'onglet ou revient sur le navigateur
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && currentUser) {
+            checkOfflineReminders();
+        }
+    });
 
     function renderCharts() {
         const isHoa = (currentUser === 'Hoa');
@@ -410,7 +459,6 @@
         if(chartWeekClemInstance) chartWeekClemInstance.destroy();
         if(chartWeekHoaInstance) chartWeekHoaInstance.destroy();
 
-        // --- 1. Graphique Journée (Pas de mention 30min dans le titre) ---
         const halfHoursLabels = [];
         for (let h = 0; h < 24; h++) {
             halfHoursLabels.push(`${h}h00`);
@@ -458,7 +506,7 @@
                 maintainAspectRatio: false,
                 plugins: { 
                     title: { display: true, text: isHoa ? 'Tiến trình hôm nay' : 'Progression de la journée', color: '#fff' }, 
-                    legend: { labels: { color: '#fff', boxWidth: 15, boxHeight: 2 } } // Trait fin pour la légende
+                    legend: { labels: { color: '#fff', boxWidth: 15, boxHeight: 2 } }
                 },
                 scales: { 
                     x: { ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } } }, 
@@ -467,7 +515,6 @@
             }
         });
 
-        // --- 2. Graphiques Hebdomadaires ---
         const last7DaysLabels = [];
         const weeklyDataClem = Array(7).fill(0);
         const weeklyDataHoa = Array(7).fill(0);
