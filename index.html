@@ -9,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water</title>
     
-    <!-- Configuration Application Mobile (PWA / Écran d'accueil) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,11 +16,9 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
-    <!-- Liens pour les Logos / Icônes d'écran d'accueil -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
 
-    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -379,7 +376,6 @@
 </head>
 <body>
 
-    <!-- CHOIX PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -387,7 +383,6 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
-    <!-- VUE PRINCIPALE -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
@@ -422,7 +417,6 @@
         </div>
     </div>
 
-    <!-- VUE DATA -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
@@ -467,7 +461,6 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
-    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <p id="alert-message"></p>
@@ -501,14 +494,12 @@
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
 
-    // Connexion native au Service Worker Webpushr
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/webpushr-sw.js')
         .then(reg => console.log('Service Worker Webpushr connecté !', reg))
         .catch(err => console.error('Erreur Service Worker:', err));
     }
 
-    // Sécurité essentielle : Ne lance le chargement QUE si le profil est déjà enregistré
     if (currentUser) {
         showApp();
     }
@@ -550,7 +541,7 @@
         document.getElementById('display-profile').innerText = isActualHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
         document.getElementById('btn-7').innerText = isActualHoa ? "Thay đổi" : "Changer";
         document.getElementById('main-action-text').innerText = isActualHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
-        document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Thống kê";
+        document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
         document.getElementById('lbl-goal-clem').innerText = isActualHoa ? "Mục tiêu Clément" : "Objectif Clément";
         document.getElementById('lbl-goal-hoa').innerText = isActualHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
         document.getElementById('lbl-days-clem').innerText = isActualHoa ? "Số ngày hoàn thành" : "Jours complétés";
@@ -564,9 +555,7 @@
     }
 
     async function loadData() {
-        // Sécurité supplémentaire : évite d'appeler Supabase si aucun utilisateur n'est configuré
         if (!currentUser) return;
-
         try {
             const { data: settings } = await supabaseClient.from('water_settings').select('*');
             if (settings) {
@@ -657,15 +646,17 @@
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
         try {
-            await fetch('https://api.webpushr.com/v1/notification/send/sid', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'webpushrKey': WEBPUSHR_KEY, 'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN },
-                body: JSON.stringify({
-                    "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
-                    "message": customMsg, "target_sid": targetUser,
-                    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
-                })
-            });
+            if (typeof window.webpushr !== 'undefined' && typeof window.webpushr.isNotificationSupported === 'function') {
+                await fetch('https://api.webpushr.com/v1/notification/send/sid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'webpushrKey': WEBPUSHR_KEY, 'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN },
+                    body: JSON.stringify({
+                        "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
+                        "message": customMsg, "target_sid": targetUser,
+                        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
+                    })
+                });
+            }
         } catch (e) { console.error(e); }
 
         const toast = document.getElementById('toast');
@@ -716,14 +707,17 @@
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                alert("Autorisation accordée ! 🚀");
-                if (typeof window.webpushr === 'function') {
-                    window.webpushr('setup', { 'user_id': currentUser });
-                    window.webpushr('showPrompt');
+                if (typeof window.webpushr !== 'undefined' && typeof window.webpushr === 'function') {
+                    try {
+                        window.webpushr('setup', { 'user_id': currentUser });
+                        window.webpushr('showPrompt');
+                        alert("Autorisation accordée ! 🚀");
+                    } catch(err) {
+                        console.error(err);
+                        alert("Le système de notification se synchronise. Réessayez dans un instant ! 👍");
+                    }
                 } else {
-                    window.webpushr = window.webpushr || function() { (window.webpushr.q = window.webpushr.q || []).push(arguments) };
-                    window.webpushr('setup', { 'user_id': currentUser });
-                    window.webpushr('showPrompt');
+                    alert("Autorisation enregistrée par le navigateur ! 🚀 Elle s'activera au prochain rechargement.");
                 }
             } else if (permission === 'denied') {
                 alert("Les notifications sont bloquées. Cliquez sur l'icône de cadenas à gauche de l'adresse internet pour les réactiver.");
