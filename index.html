@@ -647,54 +647,33 @@
         }
     }
 
-async function sendWaterReminder() {
-    const isHoa = (currentUser === 'Hoa');
-    let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
-    if (customMsg === null) return; 
-    customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
-    
-    // 1. Sauvegarde dans la base de données Supabase
-    await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
-
-    // 2. Envoi via l'API REST Webpushr en passant par un proxy CORS pour éviter le blocage et la 403
-    try {
-        // Utilisation du proxy public allorigins pour contourner le CORS du navigateur
-        const proxyUrl = "https://api.allorigins.win/get?url=";
-        const targetApiUrl = "https://api.webpushr.com/v1/notification/send/sid";
+    async function sendWaterReminder() {
+        const isHoa = (currentUser === 'Hoa');
+        let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
+        if (customMsg === null) return; 
+        customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
-        const payload = {
-            "title": currentUser === 'Hoa' ? "Lời nhắc từ Hoa! 💧" : "Rappel de Clément ! 💧",
-            "message": customMsg, 
-            "sid": targetUser, // Paramètre officiel de Webpushr pour cibler le user_id
-            "icon": "https://dr4azy.github.io/drinkwater/favicon.ico"
-        };
+        // 1. Sauvegarde dans la base de données Supabase
+        await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        await fetch(proxyUrl + encodeURIComponent(targetApiUrl), {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'webpushrKey': WEBPUSHR_KEY,
-                    'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
-                },
-                body: JSON.stringify(payload)
-            })
-        });
-        console.log("Requête de notification envoyée via le proxy !");
-    } catch (e) { 
-        console.error("Erreur lors de l'envoi de la notification :", e); 
-    }
+        // 2. Envoi via l'API Webpushr Client sécurisée (Remplace le fetch qui provoquait la 403)
+        if (typeof window.webpushr === 'function') {
+            try {
+                window.webpushr('sendNotification', {
+                    title: currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
+                    message: customMsg,
+                    target_user_id: targetUser, // Cible le profil configuré sur l'autre appareil
+                    icon: "https://dr4azy.github.io/drinkwater/favicon.ico"
+                }, function(response) {
+                    console.log("Retour de la livraison Webpushr :", response);
+                });
+            } catch (e) { 
+                console.error("Erreur Webpushr client :", e); 
+            }
+        } else {
+            console.warn("L'objet Webpushr n'est pas prêt ou bloqué sur ce navigateur.");
+        }
 
-    // 3. Animation du toast de confirmation
-    const toast = document.getElementById('toast');
-    toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
-    toast.style.opacity = '1';
-    setTimeout(() => toast.style.opacity = '0', 1500);
-}
         // 3. Animation du toast de confirmation
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
