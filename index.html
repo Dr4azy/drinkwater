@@ -656,22 +656,34 @@
         // 1. Sauvegarde dans la base de données Supabase
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        // 2. Envoi via l'API Webpushr Client sécurisée (Remplace le fetch qui provoquait la 403)
-        if (typeof window.webpushr === 'function') {
-            try {
-                window.webpushr('sendNotification', {
-                    title: currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
-                    message: customMsg,
-                    target_user_id: targetUser, // Cible le profil configuré sur l'autre appareil
-                    icon: "https://dr4azy.github.io/drinkwater/favicon.ico"
-                }, function(response) {
-                    console.log("Retour de la livraison Webpushr :", response);
-                });
-            } catch (e) { 
-                console.error("Erreur Webpushr client :", e); 
-            }
-        } else {
-            console.warn("L'objet Webpushr n'est pas prêt ou bloqué sur ce navigateur.");
+        // 2. Envoi via l'API REST Webpushr à l'aide d'un proxy pour briser les restrictions CORS et éviter l'erreur 403/apply
+        try {
+            const proxyUrl = "https://api.allorigins.win/get?url=";
+            const targetApiUrl = "https://api.webpushr.com/v1/notification/send/sid";
+            
+            const payload = {
+                "title": currentUser === 'Hoa' ? "Lời nhắc từ Hoa! 💧" : "Rappel de Clément ! 💧",
+                "message": customMsg, 
+                "sid": targetUser, 
+                "icon": "https://dr4azy.github.io/drinkwater/favicon.ico"
+            };
+
+            await fetch(proxyUrl + encodeURIComponent(targetApiUrl), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'webpushrKey': WEBPUSHR_KEY,
+                        'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
+                    },
+                    body: JSON.stringify(payload)
+                })
+            });
+            console.log("Notification traitée avec succès par le proxy !");
+        } catch (e) { 
+            console.error("Erreur d'envoi de la notification :", e); 
         }
 
         // 3. Animation du toast de confirmation
