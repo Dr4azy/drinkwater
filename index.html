@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
     <script>
-        // Initialisation standard et sécurisée du SDK Webpushr
         (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.async=1;js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk'));
         webpushr('setup',{'key':'BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs' });
     </script>
@@ -10,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water</title>
     
+    <!-- Configuration Application Mobile (PWA / Écran d'accueil) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,9 +17,11 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
+    <!-- Liens pour les Logos / Icônes d'écran d'accueil -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
 
+    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -33,62 +35,351 @@
             --text-secondary: #94a3b8;
         }
 
-        * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        * { 
+            box-sizing: border-box; 
+            font-family: -apple-system, sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
 
         /* Écran Sélection Profil */
-        #profile-selection { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; height: 100vh; padding: 20px; }
-        .profile-btn { background: var(--card); border: 2px solid var(--card); color: var(--text); padding: 20px; font-size: 1.3rem; font-weight: bold; border-radius: 16px; cursor: pointer; width: 260px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); transition: 0.2s; }
-        .profile-btn:active { transform: scale(0.95); border-color: var(--water); }
+        #profile-selection { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 20px; 
+            height: 100vh; 
+            padding: 20px; 
+        }
+        
+        .profile-btn { 
+            background: var(--card); 
+            border: 2px solid var(--card); 
+            color: var(--text); 
+            padding: 20px; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            width: 260px; 
+            box-shadow: 0 10px 15px rgba(0,0,0,0.3); 
+            transition: 0.2s; 
+        }
+        
+        .profile-btn:active { 
+            transform: scale(0.95); 
+            border-color: var(--water); 
+        }
 
         /* Vues principales */
-        .app-view { display: none; flex-direction: column; width: 100%; min-height: 100vh; padding: 15px; box-sizing: border-box; }
+        .app-view { 
+            display: none; 
+            flex-direction: column; 
+            width: 100%; 
+            min-height: 100vh; 
+            padding: 15px; 
+            box-sizing: border-box; 
+        }
         
         /* Navbar Supérieure */
-        .nav-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 12px 15px; border-radius: 14px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .nav-btn-7 { background: #ef4444; border: none; color: white; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        .nav-btn-6 { background: var(--water-deep); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: var(--card); 
+            padding: 12px 15px; 
+            border-radius: 14px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        
+        .nav-btn-7 { 
+            background: #ef4444; 
+            border: none; 
+            color: white; 
+            padding: 8px 14px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+        
+        .nav-btn-6 { 
+            background: var(--water-deep); 
+            border: none; 
+            color: white; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 50%; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
 
-        /* Encadrés Compteurs de consommation d'eau */
-        .user-card { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
-        .glass-container { width: 65px; height: 95px; border: 3px solid var(--text); border-top: none; border-radius: 0 0 12px 12px; position: relative; overflow: hidden; background: rgba(255,255,255,0.05); }
-        .glass-water { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, var(--water-deep), var(--water)); transition: height 0.5s ease-out; height: 0%; }
-        .card-info { flex-grow: 1; font-size: 1.1rem; }
-        .card-info .name { font-weight: bold; color: var(--water); font-size: 1.2rem; }
-        .card-info .stats { margin-top: 4px; font-size: 1.3rem; font-weight: bold; }
-        .card-info .percentage { font-size: 0.95rem; color: var(--text-secondary); margin-left: 5px; }
+        /* Encadrés Compteurs */
+        .user-card { 
+            background: var(--card); 
+            border-radius: 16px; 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            position: relative; 
+        }
+        
+        .glass-container { 
+            width: 65px; 
+            height: 95px; 
+            border: 3px solid var(--text); 
+            border-top: none; 
+            border-radius: 0 0 12px 12px; 
+            position: relative; 
+            overflow: hidden; 
+            background: rgba(255,255,255,0.05); 
+        }
+        
+        .glass-water { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: linear-gradient(to top, var(--water-deep), var(--water)); 
+            transition: height 0.5s ease-out; 
+            height: 0%; 
+        }
+        
+        .card-info { 
+            flex-grow: 1; 
+            font-size: 1.1rem; 
+        }
+        
+        .card-info .name { 
+            font-weight: bold; 
+            color: var(--water); 
+            font-size: 1.2rem; 
+        }
+        
+        .card-info .stats { 
+            margin-top: 4px; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+        }
+        
+        .card-info .percentage { 
+            font-size: 0.95rem; 
+            color: var(--text-secondary); 
+            margin-left: 5px; 
+        }
 
         /* Zone Boutons + et - */
-        .adjust-actions { display: flex; justify-content: space-between; width: 100%; padding: 5px 5px 15px 5px; gap: 15px; }
-        .adjust-btn { flex: 1; height: 55px; border-radius: 14px; border: 2px solid var(--water-deep); font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; background: var(--card); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: margin 0.2s; }
-        .adjust-btn:active { background: var(--water-deep); }
+        .adjust-actions { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            padding: 5px 5px 15px 5px; 
+            gap: 15px; 
+        }
+        
+        .adjust-btn { 
+            flex: 1; 
+            height: 55px; 
+            border-radius: 14px; 
+            border: 2px solid var(--water-deep); 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: white; 
+            background: var(--card); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        
+        .adjust-btn:active { 
+            background: var(--water-deep); 
+        }
 
-        /* Gros bouton central de message */
-        .center-action { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 15px 0; }
-        .main-btn-1 { width: 210px; height: 210px; border-radius: 50%; background: linear-gradient(135deg, var(--water), var(--water-deep)); border: none; color: white; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 0 30px rgba(56,189,248,0.4); display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; line-height: 1.4; transition: transform 0.1s; }
-        .main-btn-1:active { transform: scale(0.94); }
+        /* Gros bouton central */
+        .center-action { 
+            flex-grow: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 15px 0; 
+        }
+        
+        .main-btn-1 { 
+            width: 210px; 
+            height: 210px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, var(--water), var(--water-deep)); 
+            border: none; 
+            color: white; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            cursor: pointer; 
+            box-shadow: 0 0 30px rgba(56,189,248,0.4); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            padding: 20px; 
+            line-height: 1.4; 
+            transition: transform 0.1s; 
+        }
+        
+        .main-btn-1:active { 
+            transform: scale(0.94); 
+        }
 
         /* --- PAGE STATS --- */
-        .data-grid-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .data-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .data-box-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
-        .data-box-value { font-size: 1.4rem; font-weight: bold; color: var(--water); }
-        .chart-container-large { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 240px; }
+        .data-grid-row { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 12px; 
+        }
         
-        .charts-flex-column { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-        .chart-container-vertical { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
-        .btn-back { background: var(--card); border: 1px solid var(--text-secondary); color: var(--text); padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .data-box { 
+            background: var(--card); 
+            padding: 12px; 
+            border-radius: 12px; 
+            flex: 1; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        
+        .data-box-title { 
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        }
+        
+        .data-box-value { 
+            font-size: 1.4rem; 
+            font-weight: bold; 
+            color: var(--water); 
+        }
+        
+        .chart-container-large { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 16px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            height: 240px; 
+        }
+        
+        .charts-flex-column { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            margin-bottom: 20px; 
+        }
+        
+        .chart-container-vertical { 
+            background: var(--card); 
+            padding: 12px; 
+            border-radius: 14px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            height: 160px; 
+        }
+        
+        .btn-back { 
+            background: var(--card); 
+            border: 1px solid var(--text-secondary); 
+            color: var(--text); 
+            padding: 12px; 
+            border-radius: 12px; 
+            width: 100%; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+        }
 
         /* Overlay d'alerte */
-        #alert-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .alert-box { background: var(--card); border: 3px solid var(--water); padding: 40px 25px; border-radius: 24px; max-width: 90%; width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        #alert-message { font-size: 1.8rem; line-height: 1.4; margin: 10px 0; font-weight: bold; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .got-it-btn { background: var(--water); color: #000; border: none; padding: 16px 30px; font-size: 1.3rem; font-weight: bold; border-radius: 12px; margin-top: 30px; cursor: pointer; width: 100%; }
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none; }
+        #alert-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(15,23,42,0.95); 
+            z-index: 100; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        
+        .alert-box { 
+            background: var(--card); 
+            border: 3px solid var(--water); 
+            padding: 40px 25px; 
+            border-radius: 24px; 
+            max-width: 90%; 
+            width: 400px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+        }
+        
+        #alert-message { 
+            font-size: 1.8rem; 
+            line-height: 1.4; 
+            margin: 10px 0; 
+            font-weight: bold; 
+            color: #ffffff; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        }
+        
+        .got-it-btn { 
+            background: var(--water); 
+            color: #000; 
+            border: none; 
+            padding: 16px 30px; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            border-radius: 12px; 
+            margin-top: 30px; 
+            cursor: pointer; 
+            width: 100%; 
+        }
+        
+        #toast { 
+            position: fixed; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #22c55e; 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            opacity: 0; 
+            transition: opacity 0.3s; 
+            z-index: 50; 
+            pointer-events: none; 
+        }
     </style>
 </head>
 <body>
 
+    <!-- CHOIX PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -96,6 +387,7 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
+    <!-- VUE PRINCIPALE -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
@@ -130,6 +422,7 @@
         </div>
     </div>
 
+    <!-- VUE DATA -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
@@ -174,6 +467,7 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
+    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <p id="alert-message"></p>
@@ -207,14 +501,17 @@
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
 
-    // Enregistrement manuel et explicite du Service Worker Webpushr pour Android
+    // Connexion native au Service Worker Webpushr
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/webpushr-sw.js')
-        .then(reg => console.log('Service Worker Webpushr connecté avec succès !', reg))
+        .then(reg => console.log('Service Worker Webpushr connecté !', reg))
         .catch(err => console.error('Erreur Service Worker:', err));
     }
 
-    if (currentUser) showApp();
+    // Sécurité essentielle : Ne lance le chargement QUE si le profil est déjà enregistré
+    if (currentUser) {
+        showApp();
+    }
 
     function selectProfile(name) {
         currentUser = name;
@@ -253,7 +550,7 @@
         document.getElementById('display-profile').innerText = isActualHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
         document.getElementById('btn-7').innerText = isActualHoa ? "Thay đổi" : "Changer";
         document.getElementById('main-action-text').innerText = isActualHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
-        document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
+        document.getElementById('title-data-page').innerText = isActualHoa ? "Dữ liệu & Thống kê" : "Données & Thống kê";
         document.getElementById('lbl-goal-clem').innerText = isActualHoa ? "Mục tiêu Clément" : "Objectif Clément";
         document.getElementById('lbl-goal-hoa').innerText = isActualHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
         document.getElementById('lbl-days-clem').innerText = isActualHoa ? "Số ngày hoàn thành" : "Jours complétés";
@@ -267,16 +564,23 @@
     }
 
     async function loadData() {
-        const { data: settings } = await supabaseClient.from('water_settings').select('*');
-        if (settings) {
-            settings.forEach(s => {
-                appState.goals[s.user_name] = s.daily_goal_cl;
-                document.getElementById(`val-goal-${s.user_name}`).innerText = formatWater(s.daily_goal_cl);
-            });
+        // Sécurité supplémentaire : évite d'appeler Supabase si aucun utilisateur n'est configuré
+        if (!currentUser) return;
+
+        try {
+            const { data: settings } = await supabaseClient.from('water_settings').select('*');
+            if (settings) {
+                settings.forEach(s => {
+                    appState.goals[s.user_name] = s.daily_goal_cl;
+                    document.getElementById(`val-goal-${s.user_name}`).innerText = formatWater(s.daily_goal_cl);
+                });
+            }
+            const { data: logs } = await supabaseClient.from('water_logs').select('*').order('created_at', { ascending: true });
+            appState.allLogs = logs || [];
+            calculateRealtimeMetrics();
+        } catch (err) {
+            console.error("Erreur de récupération des données:", err);
         }
-        const { data: logs } = await supabaseClient.from('water_logs').select('*').order('created_at', { ascending: true });
-        appState.allLogs = logs || [];
-        calculateRealtimeMetrics();
     }
 
     function calculateRealtimeMetrics() {
@@ -371,6 +675,7 @@
     }
 
     async function checkOfflineReminders() {
+        if (!currentUser) return;
         const { data: latestReminders, error } = await supabaseClient.from('water_reminders').select('*').eq('sender', targetUser).order('id', { ascending: false }).limit(1);
         if (!error && latestReminders && latestReminders.length > 0) {
             const lastReminder = latestReminders[0];
@@ -404,7 +709,6 @@
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && currentUser) { checkOfflineReminders(); } });
 
     function demanderAutorisationPush() {
-        console.log("Clic sur la cloche Android");
         if (!('Notification' in window)) {
             alert("Ce navigateur ne gère pas les notifications.");
             return;
@@ -412,20 +716,17 @@
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                alert("Autorisation accordée ! 🚀 Demande d'affichage du prompt officiel...");
-                
-                // Force l'initialisation immédiate si webpushr est prêt
+                alert("Autorisation accordée ! 🚀");
                 if (typeof window.webpushr === 'function') {
                     window.webpushr('setup', { 'user_id': currentUser });
                     window.webpushr('showPrompt');
                 } else {
-                    // Sinon, on injecte de manière sécurisée dans la file d'attente globale
                     window.webpushr = window.webpushr || function() { (window.webpushr.q = window.webpushr.q || []).push(arguments) };
                     window.webpushr('setup', { 'user_id': currentUser });
                     window.webpushr('showPrompt');
                 }
             } else if (permission === 'denied') {
-                alert("Les notifications sont bloquées dans Google Chrome. Cliquez sur l'icône de cadenas à gauche de l'adresse pour les réactiver.");
+                alert("Les notifications sont bloquées. Cliquez sur l'icône de cadenas à gauche de l'adresse internet pour les réactiver.");
             }
         }).catch(err => { alert("Erreur système : " + err); });
     }
@@ -507,7 +808,7 @@
         chartWeekHoaInstance = new Chart(document.getElementById('weekChartHoa').getContext('2d'), {
             type: 'bar',
             data: { labels: last7DaysLabels, datasets: [{ data: weeklyDataHoa, backgroundColor: '#f43f5e' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa' : 'Semaine Hoa', color: '#fff' }, legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa' : 'Semaine Hoa', color: '#fff' }, legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } } }
         });
     }
 </script>
