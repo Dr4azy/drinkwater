@@ -653,20 +653,28 @@
         if (customMsg === null) return; 
         customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
+        // 1. Sauvegarde dans la base de données Supabase
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        try {
-            await fetch('https://api.webpushr.com/v1/notification/send/sid', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'webpushrKey': WEBPUSHR_KEY, 'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN },
-                body: JSON.stringify({
-                    "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
-                    "message": customMsg, "target_sid": targetUser,
-                    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-size='55'>💧</text></svg>"
-                })
-            });
-        } catch (e) { console.error(e); }
+        // 2. Envoi via l'API Webpushr Client sécurisée (Remplace le fetch qui provoquait la 403)
+        if (typeof window.webpushr === 'function') {
+            try {
+                window.webpushr('sendNotification', {
+                    title: currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
+                    message: customMsg,
+                    target_user_id: targetUser, // Cible le profil configuré sur l'autre appareil
+                    icon: "https://dr4azy.github.io/drinkwater/favicon.ico"
+                }, function(response) {
+                    console.log("Retour de la livraison Webpushr :", response);
+                });
+            } catch (e) { 
+                console.error("Erreur Webpushr client :", e); 
+            }
+        } else {
+            console.warn("L'objet Webpushr n'est pas prêt ou bloqué sur ce navigateur.");
+        }
 
+        // 3. Animation du toast de confirmation
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
         toast.style.opacity = '1';
@@ -807,5 +815,3 @@
         });
     }
 </script>
-</body>
-</html>
