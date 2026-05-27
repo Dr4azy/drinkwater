@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script>
-        // Initialisation alternative personnalisée pour le sous-dossier GitHub Pages
-        (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.src = "https://cdn.webpushr.com/app.min.js";
-        fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk-alternative'));
-        
-        webpushr('init','BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs','https://dr4azy.github.io/drinkwater/webpushr-sw.js','/drinkwater/');
-        
-        // Association immédiate du profil (Clément ou Hoa) à l'appareil
-        var initialUser = localStorage.getItem('water_user') || "Visiteur";
-        webpushr('setup', { 'user_id': initialUser });
-    </script>
+<script>
+    (function(w,d, s, id) {if(typeof(w.webpushr)!=='undefined') return;w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};var js, fjs = d.getElementsByTagName(s)[0];js = d.createElement(s); js.id = id;js.src = "https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);}(window,document, 'script', 'webpushr-jssdk-alternative'));
+    
+    // 1. Initialisation personnalisée qui a résolu ton problème
+    webpushr('init','BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs','https://dr4azy.github.io/drinkwater/webpushr-sw.js','/drinkwater/');
+    
+    // 2. Assignation immédiate du bon utilisateur (Clément/Hoa) à l'appareil
+    var initialUser = localStorage.getItem('water_user') || "Visiteur";
+    webpushr('setup', { 'user_id': initialUser });
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water</title>
