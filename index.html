@@ -197,25 +197,14 @@
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
-    let currentReminderId = null; // Stocke l'ID du rappel en cours d'affichage
+    let currentReminderId = null; 
     
     const timeoffsets = { 'Clément': 2, 'Hoa': 7 };
     
-    const messagesMeteo = {
-        'Clément': [
-            "Hey ! C'est l'heure de boire un grand verre d'eau ! 💧",
-            "Ton corps a soif, écoute les conseils de Hoa ! 🌊",
-            "Glou glou... Remplis ton niveau d'énergie maintenant ! ⚡",
-            "Un petit effort, ton objectif de la journée t'attend ! 🎯",
-            "Une gorgée pour la santé, n'attends pas d'avoir soif ! 🐳"
-        ],
-        'Hoa': [
-            "Đến lúc uống một cốc nước thật lớn rồi đó! 💧",
-            "Cơ thể đang khát nước nè, nghe lời Clément đi nhé! 🌊",
-            "Uống nước để giữ năng lượng và làn da đẹp nào! ⚡",
-            "Một chút cố gắng để hoàn thành mục tiêu hôm nay! 🎯",
-            "Uống một ngụm nước ngay vì sức khỏe của bạn nhé! 🐳"
-        ]
+    // Messages génériques par défaut (si l'utilisateur n'écrit rien)
+    const defaultMessages = {
+        'Clément': "Hey ! C'est l'heure de boire un grand verre d'eau ! 💧",
+        'Hoa': "Đến lúc uống một cốc nước thật lớn rồi đó! 💧"
     };
 
     let appState = {
@@ -242,7 +231,7 @@
         applyTranslations();
         
         loadData();
-        checkOfflineReminders(); // Vérification des rappels manqués pendant la fermeture
+        checkOfflineReminders(); 
         listenRealtime();
     }
 
@@ -378,20 +367,35 @@
         }
     }
 
-    // Sélectionne et transmet le message personnalisé
+    // MODIFIÉ : Demande un texte personnalisé avant l'envoi
     async function sendWaterReminder() {
-        const list = messagesMeteo[targetUser]; 
-        const randomMsg = list[Math.floor(Math.random() * list.length)];
+        const isHoa = (currentUser === 'Hoa');
+        const promptTitle = isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :";
+        
+        let customMsg = prompt(promptTitle, "");
+        
+        // Si l'utilisateur clique sur Annuler (null)
+        if (customMsg === null) return; 
+        
+        // Si l'utilisateur laisse vide, on met un message générique par défaut
+        customMsg = customMsg.trim();
+        if (customMsg === "") {
+            customMsg = defaultMessages[targetUser];
+        }
         
         await supabaseClient.from('water_reminders').insert([{ 
             sender: currentUser,
-            message: randomMsg
+            message: customMsg
         }]);
+
+        // Petit toast de confirmation d'envoi
+        const toast = document.getElementById('toast');
+        toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 1500);
     }
 
-    // VÉRIFICATION AUTOMATIQUE AU DÉMARRAGE / RETOUR SUR L'APP
     async function checkOfflineReminders() {
-        // Va chercher le dernier rappel inséré par l'AUTRE utilisateur
         const { data: latestReminders, error } = await supabaseClient
             .from('water_reminders')
             .select('*')
@@ -403,7 +407,6 @@
             const lastReminder = latestReminders[0];
             const lastSeenId = localStorage.getItem(`water_last_seen_reminder_${currentUser}`);
 
-            // Si cet ID de rappel n'a jamais été validé sur ce téléphone, on l'affiche !
             if (!lastSeenId || parseInt(lastSeenId) < lastReminder.id) {
                 currentReminderId = lastReminder.id;
                 triggerAlert(lastReminder.message);
@@ -420,7 +423,6 @@
             event: '*', pattern: 'public', table: 'water_settings'
         }, () => { loadData(); }).subscribe();
 
-        // Écoute en temps réel quand l'app est ouverte
         supabaseClient.channel('water-reminders-channel').on('postgres_changes', {
             event: 'INSERT', pattern: 'public', table: 'water_reminders'
         }, payload => {
@@ -437,7 +439,6 @@
         try { document.getElementById('water-sound').play(); } catch(e){}
     }
 
-    // Le bouton OK enregistre localement que le message a été vu et ferme l'alerte
     function dismissAlert() {
         if (currentReminderId) {
             localStorage.setItem(`water_last_seen_reminder_${currentUser}`, currentReminderId);
@@ -445,7 +446,6 @@
         document.getElementById('alert-overlay').style.display = 'none';
     }
 
-    // Vérifier à nouveau si l'utilisateur change d'onglet ou revient sur le navigateur
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && currentUser) {
             checkOfflineReminders();
