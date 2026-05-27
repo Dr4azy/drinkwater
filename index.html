@@ -193,8 +193,8 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Identifiants d'envoi Webpushr (Clé API REST)
-    const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
-    const WEBPUSHR_AUTH_TOKEN = "73305"; // Ton Auth Token Webpushr pour autoriser l'envoi
+    const WEBPUSHR_KEY = "a703933276d8d98609dd34dc9412be84";
+    const WEBPUSHR_AUTH_TOKEN = "121626"; // Ton Auth Token Webpushr pour autoriser l'envoi
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
@@ -396,8 +396,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'webpushrKey': a703933276d8d98609dd34dc9412be84,
-                    'webpushrAuthToken': 121626
+                    'webpushrKey': WEBPUSHR_KEY,
+                    'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN
                 },
                 body: JSON.stringify({
                     "title": currentUser === 'Hoa' ? `Lời nhắc từ Hoa! 💧` : `Rappel de Clément ! 💧`,
