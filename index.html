@@ -9,7 +9,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0f172a">
 
-    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -48,37 +47,38 @@
         .card-info .stats { margin-top: 4px; font-size: 1.3rem; font-weight: bold; }
         .card-info .percentage { font-size: 0.95rem; color: var(--text-secondary); margin-left: 5px; }
 
-        /* Gros bouton central 1 */
-        .center-action { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 20px 0; }
-        .main-btn-1 { width: 160px; height: 160px; border-radius: 50%; background: linear-gradient(135deg, var(--water), var(--water-deep)); border: none; color: white; font-size: 3.5rem; cursor: pointer; box-shadow: 0 0 25px rgba(56,189,248,0.4); position: relative; transition: transform 0.1s; }
-        .main-btn-1:active { transform: scale(0.92); }
-        
-        /* Boutons d'ajustement bas 4 & 5 */
-        .bottom-actions { display: flex; justify-content: space-between; width: 100%; padding: 0 10px; }
-        .adjust-btn { width: 60px; height: 60px; border-radius: 14px; border: none; font-size: 1.6rem; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .btn-4-add { background: #22c55e; }
-        .btn-5-rem { background: #ea580c; }
+        /* Zone Boutons d'ajustement + et - (Placée au-dessus du gros bouton) */
+        .adjust-actions { display: flex; justify-content: space-between; width: 100%; padding: 5px 5px 15px 5px; gap: 15px; }
+        .adjust-btn { flex: 1; height: 55px; border-radius: 14px; border: 2px solid var(--water-deep); font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; background: var(--card); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.2s; }
+        .adjust-btn:active { background: var(--water-deep); }
 
-        /* --- PAGE DE DATA (image_1360ab.png) --- */
+        /* Gros bouton central 1 (Agrandit légèrement, texte au lieu de l'icône) */
+        .center-action { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 15px 0; }
+        .main-btn-1 { width: 210px; height: 210px; border-radius: 50%; background: linear-gradient(135deg, var(--water), var(--water-deep)); border: none; color: white; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 0 30px rgba(56,189,248,0.4); display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; line-height: 1.4; transition: transform 0.1s; }
+        .main-btn-1:active { transform: scale(0.94); }
+
+        /* --- PAGE DE DATA --- */
         .data-grid-row { display: flex; gap: 10px; margin-bottom: 12px; }
         .data-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .data-box-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
         .data-box-value { font-size: 1.4rem; font-weight: bold; color: var(--water); }
-        .chart-container-large { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 220px; }
-        .charts-flex-row { display: flex; gap: 10px; margin-bottom: 20px; }
-        .chart-container-small { background: var(--card); padding: 10px; border-radius: 12px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
-        .btn-back { background: var(--card); border: 1px solid var(--text-secondary); color: var(--text); padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .chart-container-large { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 240px; }
+        
+        /* Graphiques hebdomadaires empilés l'un au-dessus de l'autre */
+        .charts-flex-column { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .chart-container-vertical { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 160px; }
+        
+        .btn-back { background: var(--card); border: 1px solid var(--text-secondary); color: var(--text); padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         /* Overlay d'alerte */
         #alert-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         .alert-box { background: var(--card); border: 3px solid var(--water); padding: 35px 25px; border-radius: 24px; max-width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .got-it-btn { background: var(--water); color: #000; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 12px; margin-top: 20px; cursor: pointer; width: 100%; }
-        #toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <!-- ÉCRAN CHOIX DU PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">💧 Drink Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -86,17 +86,13 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
-    <!-- ÉCRAN PRINCIPAL (image_0964be.png) -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
-            <!-- Bouton 7 -->
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
             <div style="font-weight: bold;" id="display-profile">...</div>
-            <!-- Bouton 6 -->
             <button id="btn-6" class="nav-btn-6" onclick="switchView('data-view')">📊</button>
         </div>
 
-        <!-- Encadré 2 (Clément) -->
         <div class="user-card" id="card-clement">
             <div class="glass-container"><div id="glass-fill-Clément" class="glass-water"></div></div>
             <div class="card-info">
@@ -105,7 +101,6 @@
             </div>
         </div>
 
-        <!-- Encadré 3 (Hoa) -->
         <div class="user-card" id="card-hoa">
             <div class="glass-container"><div id="glass-fill-Hoa" class="glass-water"></div></div>
             <div class="card-info">
@@ -114,60 +109,53 @@
             </div>
         </div>
 
-        <!-- Gros bouton 1 -->
-        <div class="center-action">
-            <button class="main-btn-1" onclick="sendWaterReminder()">📣</button>
+        <div class="adjust-actions">
+            <button class="adjust-btn" onclick="logWater(25)">+25 cL</button>
+            <button class="adjust-btn" onclick="logWater(-25)">-25 cL</button>
         </div>
 
-        <!-- Boutons d'ajustement bas 4 & 5 -->
-        <div class="bottom-actions">
-            <button class="adjust-btn btn-4-add" onclick="logWater(25)">+25</button>
-            <button class="adjust-btn btn-5-rem" onclick="logWater(-25)">-25</button>
+        <div class="center-action">
+            <button id="main-action-text" class="main-btn-1" onclick="sendWaterReminder()">Rappeler à l'autre de boire</button>
         </div>
     </div>
 
-    <!-- ÉCRAN DATA (image_1360ab.png) -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
             <div></div>
         </div>
 
-        <!-- Boutons de modification d'objectifs 8 & 9 -->
         <div class="data-grid-row">
             <div class="data-box" onclick="changeGoal('Clément')" style="cursor:pointer; border: 1px solid rgba(255,255,255,0.1);">
-                <div class="data-box-title" id="lbl-goal-clem">Objectif Clément (8)</div>
+                <div class="data-box-title" id="lbl-goal-clem">Objectif Clément</div>
                 <div class="data-box-value" id="val-goal-Clément">1.5 L</div>
             </div>
             <div class="data-box" onclick="changeGoal('Hoa')" style="cursor:pointer; border: 1px solid rgba(255,255,255,0.1);">
-                <div class="data-box-title" id="lbl-goal-hoa">Objectif Hoa (9)</div>
+                <div class="data-box-title" id="lbl-goal-hoa">Objectif Hoa</div>
                 <div class="data-box-value" id="val-goal-Hoa">1.5 L</div>
             </div>
         </div>
 
-        <!-- Nombre de jours validés 10 & 11 -->
         <div class="data-grid-row">
             <div class="data-box">
-                <div class="data-box-title" id="lbl-days-clem">Jours complétés (10)</div>
-                <div class="data-box-value" id="streak-Clément">0 d</div>
+                <div class="data-box-title" id="lbl-days-clem">Jours complétés</div>
+                <div class="data-box-value" id="streak-Clément">0 j</div>
             </div>
             <div class="data-box">
-                <div class="data-box-title" id="lbl-days-hoa">Jours complétés (11)</div>
-                <div class="data-box-value" id="streak-Hoa">0 d</div>
+                <div class="data-box-title" id="lbl-days-hoa">Jours complétés</div>
+                <div class="data-box-value" id="streak-Hoa">0 j</div>
             </div>
         </div>
 
-        <!-- Graphique unique Journée 12 & 13 (2 courbes) -->
         <div class="chart-container-large">
             <canvas id="dayChart"></canvas>
         </div>
 
-        <!-- Graphiques de la Semaine 14 & 15 -->
-        <div class="charts-flex-row">
-            <div class="chart-container-small">
+        <div class="charts-flex-column">
+            <div class="chart-container-vertical">
                 <canvas id="weekChartClem"></canvas>
             </div>
-            <div class="chart-container-small">
+            <div class="chart-container-vertical">
                 <canvas id="weekChartHoa"></canvas>
             </div>
         </div>
@@ -175,7 +163,6 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
-    <!-- OVERLAY ALERTE RAPPEL -->
     <div id="alert-overlay">
         <div class="alert-box">
             <h2 id="alert-title-text" style="font-size:2rem; margin:0 0 10px 0; color:var(--water);">🌊 BOIS DE L'EAU !</h2>
@@ -188,9 +175,6 @@
     <audio id="water-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
 <script>
-    // ==========================================
-    // CONFIGURATION SUPABASE METTANT EN OEUVRE LA CLÉ PUBLIEE
-    // ==========================================
     const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -198,17 +182,14 @@
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
     
-    // Fuseaux horaires assignés
-    const timezones = { 'Clément': 'Europe/Paris', 'Hoa': 'Asia/Ho_Chi_Minh' };
+    // Application stricte des fuseaux horaires (Clément en UTC+2, Hoa en UTC+7)
+    const timeoffsets = { 'Clément': 2, 'Hoa': 7 };
     
-    // Variables globales d'état de l'application
     let appState = {
         goals: { 'Clément': 150, 'Hoa': 150 },
-        todayLogs: [],
         allLogs: []
     };
 
-    // Instances des graphiques Chart.js
     let chartDayInstance = null;
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
@@ -227,7 +208,6 @@
         switchView('main-view');
         applyTranslations();
         
-        // Chargement initial des données et écoute Realtime
         loadData();
         listenRealtime();
     }
@@ -236,7 +216,7 @@
         document.getElementById('main-view').style.display = (viewId === 'main-view') ? 'flex' : 'none';
         document.getElementById('data-view').style.display = (viewId === 'data-view') ? 'flex' : 'none';
         if(viewId === 'data-view') {
-            setTimeout(renderCharts, 100); // Laisse le conteneur s'afficher avant de dessiner les graphiques
+            setTimeout(renderCharts, 100);
         }
     }
 
@@ -245,7 +225,6 @@
         window.location.href = window.location.origin + window.location.pathname;
     }
 
-    // Convertit les cl au format lisible L ou cl selon la règle définie
     function formatWater(cl) {
         if (cl < 0) cl = 0;
         return cl >= 100 ? (cl / 100).toFixed(2) + " L" : cl + " cL";
@@ -255,26 +234,26 @@
         const isHoa = (currentUser === "Hoa");
         document.getElementById('display-profile').innerText = isHoa ? `Hồ sơ: Hoa` : `Profil: Clément`;
         document.getElementById('btn-7').innerText = isHoa ? "Thay đổi" : "Changer";
+        document.getElementById('main-action-text').innerText = isHoa ? "Nhắc người kia uống nước" : "Rappeler à l'autre de boire";
         
-        // Traductions Écran de Data
         document.getElementById('title-data-page').innerText = isHoa ? "Dữ liệu & Thống kê" : "Données & Statistiques";
-        document.getElementById('lbl-goal-clem').innerText = isHoa ? "Mục tiêu Clément (8)" : "Objectif Clément (8)";
-        document.getElementById('lbl-goal-hoa').innerText = isHoa ? "Mục tiêu Hoa (9)" : "Objectif Hoa (9)";
-        document.getElementById('lbl-days-clem').innerText = isHoa ? "Số ngày hoàn thành (10)" : "Jours complétés (10)";
-        document.getElementById('lbl-days-hoa').innerText = isHoa ? "Số ngày hoàn thành (11)" : "Jours complétés (11)";
+        document.getElementById('lbl-goal-clem').innerText = isHoa ? "Mục tiêu Clément" : "Objectif Clément";
+        document.getElementById('lbl-goal-hoa').innerText = isHoa ? "Mục tiêu Hoa" : "Objectif Hoa";
+        document.getElementById('lbl-days-clem').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
+        document.getElementById('lbl-days-hoa').innerText = isHoa ? "Số ngày hoàn thành" : "Jours complétés";
         document.getElementById('btn-back-main').innerText = isHoa ? "⬅ Quay lại" : "⬅ Retour";
         document.getElementById('alert-title-text').innerText = isHoa ? "🌊 UỐNG NƯỚC ĐI !" : "🌊 BOIS DE L'EAU !";
         document.getElementById('btn-dismiss').innerText = isHoa ? "Đã xong! 👍" : "C'est fait ! 👍";
     }
 
-    // Récupère la date "Aujourd'hui" calée sur le fuseau horaire spécifique de l'utilisateur
-    function getLocalDateString(tz) {
-        const d = new Date();
-        return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+    // Calcul de la date locale courante basée sur le décalage UTC fixe de l'utilisateur
+    function getLocalDateStringFromOffset(offset) {
+        const utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
+        const localTime = new Date(utc + (3600000 * offset));
+        return localTime.toISOString().split('T')[0];
     }
 
     async function loadData() {
-        // 1. Récupération des objectifs configurés (water_settings)
         const { data: settings } = await supabaseClient.from('water_settings').select('*');
         if (settings) {
             settings.forEach(s => {
@@ -283,7 +262,6 @@
             });
         }
 
-        // 2. Récupération complète de l'historique de consommation (water_logs)
         const { data: logs } = await supabaseClient.from('water_logs').select('*').order('created_at', { ascending: true });
         appState.allLogs = logs || [];
         
@@ -292,18 +270,18 @@
 
     function calculateRealtimeMetrics() {
         const totals = { 'Clément': 0, 'Hoa': 0 };
-        const dateStrClem = getLocalDateString(timezones['Clément']);
-        const dateStrHoa = getLocalDateString(timezones['Hoa']);
+        const dateStrClem = getLocalDateStringFromOffset(timeoffsets['Clément']);
+        const dateStrHoa = getLocalDateStringFromOffset(timeoffsets['Hoa']);
 
-        // Calcul de la quantité bue aujourd'hui selon le fuseau respectif de chacun
         appState.allLogs.forEach(log => {
-            const logDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: log.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(log.created_at));
+            const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
+            const userOffset = log.user_name === 'Clément' ? timeoffsets['Clément'] : timeoffsets['Hoa'];
+            const logLocalDateStr = new Date(logUtc + (3600000 * userOffset)).toISOString().split('T')[0];
             
-            if (log.user_name === 'Clément' && logDateStr === dateStrClem) totals['Clément'] += log.amount_cl;
-            if (log.user_name === 'Hoa' && logDateStr === dateStrHoa) totals['Hoa'] += log.amount_cl;
+            if (log.user_name === 'Clément' && logLocalDateStr === dateStrClem) totals['Clément'] += log.amount_cl;
+            if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHoa) totals['Hoa'] += log.amount_cl;
         });
 
-        // Mise à jour visuelle des compteurs et des verres d'eau
         ['Clément', 'Hoa'].forEach(user => {
             const total = Math.max(0, totals[user]);
             const goal = appState.goals[user];
@@ -314,42 +292,39 @@
             document.getElementById(`glass-fill-${user}`).style.height = `${pct}%`;
         });
 
-        // Calcul du nombre de jours où l'objectif a été complété (Streaks)
         calculateStreaks();
     }
 
     function calculateStreaks() {
         const streaks = { 'Clément': 0, 'Hoa': 0 };
-        const dailyAggregates = {}; // Structure: { 'Clément': { '2026-05-15': total_cl }, ... }
+        const dailyAggregates = { 'Clément': {}, 'Hoa': {} };
 
         appState.allLogs.forEach(log => {
-            const logDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: log.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(log.created_at));
-            if (!dailyAggregates[log.user_name]) dailyAggregates[log.user_name] = {};
-            if (!dailyAggregates[log.user_name][logDateStr]) dailyAggregates[log.user_name][logDateStr] = 0;
-            dailyAggregates[log.user_name][logDateStr] += log.amount_cl;
+            const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
+            const userOffset = timeoffsets[log.user_name];
+            const logLocalDateStr = new Date(logUtc + (3600000 * userOffset)).toISOString().split('T')[0];
+            
+            if (!dailyAggregates[log.user_name][logLocalDateStr]) dailyAggregates[log.user_name][logLocalDateStr] = 0;
+            dailyAggregates[log.user_name][logLocalDateStr] += log.amount_cl;
         });
 
         ['Clément', 'Hoa'].forEach(user => {
             let userDaysSuccess = 0;
-            if (dailyAggregates[user]) {
-                Object.keys(dailyAggregates[user]).forEach(dateKey => {
-                    if (dailyAggregates[user][dateKey] >= appState.goals[user]) {
-                        userDaysSuccess++;
-                    }
-                });
-            }
+            Object.keys(dailyAggregates[user]).forEach(dateKey => {
+                if (dailyAggregates[user][dateKey] >= appState.goals[user]) {
+                    userDaysSuccess++;
+                }
+            });
             streaks[user] = userDaysSuccess;
-            document.getElementById(`streak-${user}`).innerText = `${userDaysSuccess} j`;
+            document.getElementById(`streak-${user}`).innerText = `${userDaysSuccess} ${currentUser === 'Hoa' ? 'ngày' : 'j'}`;
         });
     }
 
-    // Insertion d'un enregistrement d'eau (Ajout/Retrait boutons 4 & 5)
     async function logWater(amount) {
-        const userTz = timezones[currentUser];
         const { error } = await supabaseClient.from('water_logs').insert([{
             user_name: currentUser,
             amount_cl: amount,
-            timezone: userTz
+            timezone: currentUser === 'Clément' ? 'Europe/Paris' : 'Asia/Ho_Chi_Minh'
         }]);
 
         if (!error) {
@@ -361,7 +336,6 @@
         }
     }
 
-    // Modification d'un objectif de consommation journalière (Boutons 8 & 9)
     async function changeGoal(user) {
         const promptMsg = currentUser === 'Hoa' ? `Mục tiêu mới cho ${user} (cL):` : `Nouvel objectif pour ${user} (en cL) :`;
         const newGoal = prompt(promptMsg, appState.goals[user]);
@@ -374,23 +348,19 @@
         }
     }
 
-    // Bouton de rappel central 1
     async function sendWaterReminder() {
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser }]);
     }
 
     function listenRealtime() {
-        // Écoute des ajouts d'eau
         supabaseClient.channel('water-logs-channel').on('postgres_changes', {
             event: 'INSERT', pattern: 'public', table: 'water_logs'
         }, () => { loadData(); }).subscribe();
 
-        // Écoute des changements de paramètres d'objectifs
         supabaseClient.channel('water-settings-channel').on('postgres_changes', {
             event: '*', pattern: 'public', table: 'water_settings'
         }, () => { loadData(); }).subscribe();
 
-        // Écoute des demandes de rappels d'eau instantanés
         supabaseClient.channel('water-reminders-channel').on('postgres_changes', {
             event: 'INSERT', pattern: 'public', table: 'water_reminders'
         }, payload => {
@@ -414,57 +384,77 @@
         document.getElementById('alert-overlay').style.display = 'none';
     }
 
-    // --- CONSTRUCTION ET RENDU DES GRAPHIQUES (Chart.js) ---
     function renderCharts() {
         const isHoa = (currentUser === 'Hoa');
         
-        // Destruction des instances existantes pour éviter la superposition de canvas
         if(chartDayInstance) chartDayInstance.destroy();
         if(chartWeekClemInstance) chartWeekClemInstance.destroy();
         if(chartWeekHoaInstance) chartWeekHoaInstance.destroy();
 
-        // --- 1. Préparation du Graphique de la Journée 12 & 13 (2 courbes cumulées sur 24 heures) ---
-        const hoursLabels = Array.from({length: 24}, (_, i) => `${i}h`);
-        const hourlyClem = Array(24).fill(0);
-        const hourlyHoa = Array(24).fill(0);
+        // --- 1. Graphique Journée à précision 30 minutes ---
+        const halfHoursLabels = [];
+        for (let h = 0; h < 24; h++) {
+            halfHoursLabels.push(`${h}h00`);
+            halfHoursLabels.push(`${h}h30`);
+        }
+        
+        const slotsClem = Array(48).fill(0);
+        const slotsHoa = Array(48).fill(0);
 
-        const dateStrClem = getLocalDateString(timezones['Clément']);
-        const dateStrHoa = getLocalDateString(timezones['Hoa']);
+        const dateStrClem = getLocalDateStringFromOffset(timeoffsets['Clément']);
+        const dateStrHoa = getLocalDateStringFromOffset(timeoffsets['Hoa']);
 
         appState.allLogs.forEach(log => {
-            const logDate = new Date(log.created_at);
-            const logDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: log.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(logDate);
-            const formatterHour = new Intl.DateTimeFormat('fr-FR', { timeZone: log.timezone, hour: 'numeric', hour12: false });
-            const logHour = parseInt(formatterHour.format(logDate));
+            const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
+            const userOffset = log.user_name === 'Clément' ? timeoffsets['Clément'] : timeoffsets['Hoa'];
+            const localDate = new Date(logUtc + (3600000 * userOffset));
+            const logLocalDateStr = localDate.toISOString().split('T')[0];
+            
+            const hours = localDate.getHours();
+            const minutes = localDate.getMinutes();
+            const slotIdx = (hours * 2) + (minutes >= 30 ? 1 : 0);
 
-            if (log.user_name === 'Clément' && logDateStr === dateStrClem) hourlyClem[logHour] += log.amount_cl;
-            if (log.user_name === 'Hoa' && logDateStr === dateStrHoa) hourlyHoa[logHour] += log.amount_cl;
+            if (slotIdx >= 0 && slotIdx < 48) {
+                if (log.user_name === 'Clément' && logLocalDateStr === dateStrClem) slotsClem[slotIdx] += log.amount_cl;
+                if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHoa) slotsHoa[slotIdx] += log.amount_cl;
+            }
         });
 
-        // Transformation en courbes cumulatives au fil des heures de la journée
         let cumClem = 0, cumHoa = 0;
-        const cumulativeClem = hourlyClem.map(v => { cumClem += v; return Math.max(0, cumClem); });
-        const cumulativeHoa = hourlyHoa.map(v => { cumHoa += v; return Math.max(0, cumHoa); });
+        const cumulativeClem = slotsClem.map(v => { cumClem += v; return Math.max(0, cumClem); });
+        const cumulativeHoa = slotsHoa.map(v => { cumHoa += v; return Math.max(0, cumHoa); });
 
         const ctxDay = document.getElementById('dayChart').getContext('2d');
         chartDayInstance = new Chart(ctxDay, {
             type: 'line',
             data: {
-                labels: hoursLabels,
+                labels: halfHoursLabels,
                 datasets: [
-                    { label: 'Clément (cL)', data: cumulativeClem, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.1)', tension: 0.2, fill: true },
-                    { label: 'Hoa (cL)', data: cumulativeHoa, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', tension: 0.2, fill: true }
+                    { label: 'Clément (cL)', data: cumulativeClem, borderColor: '#38bdf8', backgroundColor: 'transparent', tension: 0.1, fill: false, borderWidth: 2, pointRadius: 1 },
+                    { label: 'Hoa (cL)', data: cumulativeHoa, borderColor: '#f43f5e', backgroundColor: 'transparent', tension: 0.1, fill: false, borderWidth: 2, pointRadius: 1 }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { title: { display: true, text: isHoa ? 'Tiến trình hôm nay (12-13)' : 'Progression de la journée (12-13)', color: '#fff' }, legend: { labels: { color: '#fff' } } },
-                scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }
+                plugins: { 
+                    title: { display: true, text: isHoa ? 'Tiến trình hôm nay (Mỗi 30 phút)' : 'Progression de la journée (Toutes les 30 min)', color: '#fff' }, 
+                    legend: { 
+                        labels: { 
+                            color: '#fff',
+                            boxWidth: 15, // Plus fin
+                            boxHeight: 2,  // Utilise un trait plutôt qu'un rectangle pour la légende
+                        } 
+                    } 
+                },
+                scales: { 
+                    x: { ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } } }, 
+                    y: { ticks: { color: '#94a3b8' } } 
+                }
             }
         });
 
-        // --- 2. Préparation des Graphiques de la Semaine 14 & 15 (Barres par jours glissants) ---
+        // --- 2. Graphiques Hebdomadaires ---
         const last7DaysLabels = [];
         const weeklyDataClem = Array(7).fill(0);
         const weeklyDataHoa = Array(7).fill(0);
@@ -476,11 +466,18 @@
         }
 
         appState.allLogs.forEach(log => {
-            const logDate = new Date(log.created_at);
-            const diffTime = Math.abs(new Date() - logDate);
+            const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
+            const userOffset = timeoffsets[log.user_name];
+            const logDate = new Date(logUtc + (3600000 * userOffset));
+            
+            const todayLocal = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000) + (3600000 * userOffset));
+            todayLocal.setHours(0,0,0,0);
+            logDate.setHours(0,0,0,0);
+            
+            const diffTime = todayLocal - logDate;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
-            if (diffDays < 7) {
+            if (diffDays < 7 && diffDays >= 0) {
                 const index = 6 - diffDays;
                 if (index >= 0 && index < 7) {
                     if (log.user_name === 'Clément') weeklyDataClem[index] += log.amount_cl;
@@ -489,7 +486,6 @@
             }
         });
 
-        // Graphique Hebdomadaire Clément (14)
         const ctxWeekClem = document.getElementById('weekChartClem').getContext('2d');
         chartWeekClemInstance = new Chart(ctxWeekClem, {
             type: 'bar',
@@ -500,12 +496,11 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { title: { display: true, text: isHoa ? 'Tuần Clément (14)' : 'Semaine Clem (14)', color: '#fff' }, legend: { display: false } },
-                scales: { x: { ticks: { color: '#94a3b8', font: { size: 9 } } }, y: { ticks: { color: '#94a3b8' } } }
+                plugins: { title: { display: true, text: isHoa ? 'Tuần Clément' : 'Semaine Clément', color: '#fff' }, legend: { display: false } },
+                scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
             }
         });
 
-        // Graphique Hebdomadaire Hoa (15)
         const ctxWeekHoa = document.getElementById('weekChartHoa').getContext('2d');
         chartWeekHoaInstance = new Chart(ctxWeekHoa, {
             type: 'bar',
@@ -516,8 +511,8 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa (15)' : 'Semaine Hoa (15)', color: '#fff' }, legend: { display: false } },
-                scales: { x: { ticks: { color: '#94a3b8', font: { size: 9 } } }, y: { ticks: { color: '#94a3b8' } } }
+                plugins: { title: { display: true, text: isHoa ? 'Tuần Hoa' : 'Semaine Hoa', color: '#fff' }, legend: { display: false } },
+                scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { ticks: { color: '#94a3b8' } } }
             }
         });
     }
