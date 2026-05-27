@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Water</title>
     
+    <!-- Configuration Application Mobile (PWA / Écran d'accueil) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,9 +15,11 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="background-color" content="#0f172a">
 
+    <!-- Liens pour les Logos / Icônes d'écran d'accueil -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2255%22>💧</text></svg>">
 
+    <!-- Supabase & Chart.js Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -86,6 +89,7 @@
 </head>
 <body>
 
+    <!-- CHOIX PROFIL -->
     <div id="profile-selection">
         <h1 style="color:var(--water); margin-bottom:5px;">Water</h1>
         <p style="color:var(--text-secondary); margin-bottom:20px;">Sélectionnez votre profil / Chọn hồ sơ</p>
@@ -93,6 +97,7 @@
         <button class="profile-btn" onclick="selectProfile('Hoa')">👩‍⚕️ Hoa</button>
     </div>
 
+    <!-- VUE PRINCIPALE -->
     <div id="main-view" class="app-view">
         <div class="nav-bar">
             <button id="btn-7" class="nav-btn-7" onclick="logout()">Changer</button>
@@ -127,6 +132,7 @@
         </div>
     </div>
 
+    <!-- VUE DATA -->
     <div id="data-view" class="app-view">
         <div class="nav-bar">
             <div style="font-weight:bold;" id="title-data-page">Données & Statistiques</div>
@@ -171,6 +177,7 @@
         <button class="btn-back" id="btn-back-main" onclick="switchView('main-view')">⬅ Retour</button>
     </div>
 
+    <!-- OVERLAY ALERTE -->
     <div id="alert-overlay">
         <div class="alert-box">
             <p id="alert-message"></p>
@@ -224,7 +231,7 @@
         switchView('main-view');
         applyTranslations();
         
-        if (typeof window.webpushr !== 'undefined') {
+        if (typeof window.webpushr !== 'undefined' && typeof window.webpushr === 'function') {
             window.webpushr('setup', { 'user_id': currentUser });
         }
         
@@ -463,41 +470,42 @@
         }
     });
 
-   function demanderAutorisationPush() {
-    console.log("Clic sur la cloche Android");
-    
-    if (!('Notification' in window)) {
-        alert("Ce navigateur ne gère pas les notifications.");
-        return;
+    function demanderAutorisationPush() {
+        console.log("Clic sur la cloche Android");
+        
+        if (!('Notification' in window)) {
+            alert("Ce navigateur ne gère pas les notifications.");
+            return;
+        }
+
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                alert("Autorisation acceptée sur Android ! 👍 Configuration de Webpushr...");
+                
+                // Vérification de sécurité stricte pour éviter l'erreur .apply()
+                if (typeof window.webpushr === 'function') {
+                    try {
+                        window.webpushr('setup', { 'user_id': currentUser });
+                        window.webpushr('showPrompt');
+                        alert("Appareil lié avec succès à : " + currentUser);
+                    } catch (e) {
+                        console.error("Erreur Webpushr :", e);
+                        alert("Le système de notification se synchronise en tâche de fond. Réessaye dans 3 secondes ! ⏳");
+                    }
+                } else {
+                    // Si le SDK n'a pas fini sa mutation, on insère de façon sécurisée dans la file d'attente
+                    window.webpushr = window.webpushr || function() { (window.webpushr.q = window.webpushr.q || []).push(arguments) };
+                    window.webpushr('setup', { 'user_id': currentUser });
+                    alert("Appareil enregistré ! Il sera visible sur Webpushr dès la prochaine ouverture.");
+                }
+            } else if (permission === 'denied') {
+                alert("Les notifications sont bloquées dans Google Chrome. Clique sur l'icône de réglages / cadenas à gauche de l'URL pour réactiver.");
+            }
+        }).catch(err => {
+            alert("Erreur système : " + err);
+        });
     }
 
-    Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-            alert("Autorisation acceptée sur Android ! 👍 Configuration de Webpushr...");
-            
-            // On vérifie que webpushr existe ET que ce n'est pas juste un tableau temporaire vide
-            if (typeof window.webpushr === 'function') {
-                try {
-                    window.webpushr('setup', { 'user_id': currentUser });
-                    window.webpushr('showPrompt');
-                    alert("Appareil lié avec succès à : " + currentUser);
-                } catch (e) {
-                    console.error("Erreur Webpushr :", e);
-                    alert("Le système de notification est en train de démarrer. Réessaye dans 3 secondes ! ⏳");
-                }
-            } else {
-                // Si Webpushr n'est pas encore une fonction prête, on pousse la conf dans la file d'attente standard
-                window.webpushr = window.webpushr || function() { (window.webpushr.q = window.webpushr.q || []).push(arguments) };
-                window.webpushr('setup', { 'user_id': currentUser });
-                alert("Appareil enregistré ! Il apparaîtra sur Webpushr au prochain rechargement.");
-            }
-        } else if (permission === 'denied') {
-            alert("Les notifications sont bloquées dans Google Chrome. Clique sur l'icône de réglages / cadenas à gauche de l'URL pour réactiver.");
-        }
-    }).catch(err => {
-        alert("Erreur système : " + err);
-    });
-}
     function renderCharts() {
         const isHoa = (currentUser === 'Hoa');
         
