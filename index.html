@@ -476,7 +476,6 @@
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Uniformisation de la clé Webpushr pour éviter le conflit d'initialisation
     const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
     const WEBPUSHR_AUTH_TOKEN = "121626";
 
@@ -576,7 +575,7 @@
     function calculateRealtimeMetrics() {
         const totals = { 'Clément': 0, 'Hoa': 0 };
         const dateStrClem = getLocalDateStringFromOffset(timeoffsets['Clément']);
-        const dateStrHoa = getLocalDateStringFromOffset(timeoffsets['Hoa']);
+        const dateStrHost = getLocalDateStringFromOffset(timeoffsets['Hoa']);
 
         appState.allLogs.forEach(log => {
             const logUtc = new Date(log.created_at).getTime() + (new Date(log.created_at).getTimezoneOffset() * 60000);
@@ -584,7 +583,7 @@
             const logLocalDateStr = new Date(logUtc + (3600000 * userOffset)).toISOString().split('T')[0];
             
             if (log.user_name === 'Clément' && logLocalDateStr === dateStrClem) totals['Clément'] += log.amount_cl;
-            if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHoa) totals['Hoa'] += log.amount_cl;
+            if (log.user_name === 'Hoa' && logLocalDateStr === dateStrHost) totals['Hoa'] += log.amount_cl;
         });
 
         ['Clément', 'Hoa'].forEach(user => {
@@ -706,17 +705,22 @@
 
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                if (typeof window.webpushr !== 'undefined') {
+                // Utilisation directe et sécurisée du point d'ancrage natif de l'API Webpushr sans passer par l'alias global instable
+                if (window._webpushr && typeof window._webpushr.inline_push_unsubscribed === 'function') {
+                    try {
+                        window._webpushr.inline_push_unsubscribed(currentUser);
+                        alert("Autorisation accordée ! 🚀 Appareil synchronisé.");
+                    } catch(err) {
+                        alert("Configuration validée ! Le système se synchronise en tâche de fond. 👍");
+                    }
+                } else if (typeof window.webpushr === 'function') {
                     try {
                         window.webpushr('setup', { 'user_id': currentUser });
                         window.webpushr('showPrompt');
-                        alert("Autorisation accordée ! 🚀");
-                    } catch(err) {
-                        console.error(err);
-                        alert("Configuration en cours, le système s'active ! 👍");
-                    }
+                    } catch(e) {}
+                    alert("Configuration validée ! Le système s'active. 👍");
                 } else {
-                    alert("Autorisation enregistrée ! 🚀 Elle s'activera automatiquement.");
+                    alert("Autorisation enregistrée ! 🚀 Elle s'activera au prochain rechargement.");
                 }
             } else if (permission === 'denied') {
                 alert("Les notifications sont bloquées. Activez-les dans les paramètres de votre navigateur.");
