@@ -476,8 +476,6 @@
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
-
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
     let currentReminderId = null; 
@@ -493,7 +491,7 @@
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
 
-    // Configuration et initialisation propre du Service Worker sur GitHub Pages
+    // Enregistrement passif du Service Worker Webpushr (pour l'abonnement de fond sans interférence de script)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/drinkwater/webpushr-sw.js', { scope: '/drinkwater/' })
         .then(reg => console.log('Service Worker Webpushr connecté !', reg))
@@ -515,11 +513,6 @@
         document.getElementById('profile-selection').style.display = 'none';
         switchView('main-view');
         applyTranslations();
-        
-        // Liaison de l'identifiant personnalisé à la session Webpushr active
-        window._webpushr = window._webpushr || [];
-        window._webpushr.push(["init", WEBPUSHR_KEY, currentUser]);
-
         loadData();
         checkOfflineReminders(); 
         listenRealtime();
@@ -645,25 +638,19 @@
     async function sendWaterReminder() {
         const isHoa = (currentUser === 'Hoa');
         let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
-        if (customMsg === null) return; 
+        if (customMsg === null) return; // Annulation
         customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
-        // 1. Sauvegarde instantanée dans Supabase. Grâce au Realtime (listenRealtime),
-        // si l'application de l'autre est ouverte au premier plan, l'alerte surgira INSTANTANÉMENT sur son écran.
-        await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
-
-        // 2. Envoi du Push via l'événement personnalisé Webpushr (sans passer par Fetch / évite le CORS)
-        if (window.webpushr) {
-            try {
-                // Utilisation de l'API d'action utilisateur intégrée pour déclencher une notification par segment d'ID
-                window.webpushr('clearAllNotification'); 
-                console.log("Événement de notification envoyé à Supabase et synchronisé.");
-            } catch (e) {
-                console.error(e);
-            }
+        try {
+            // Insertion du message dans Supabase : le canal realtime (listenRealtime) 
+            // se charge de faire apparaître l'alerte immédiatement sur l'appareil de la cible.
+            await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
+            console.log("Rappel envoyé avec succès via Supabase Realtime.");
+        } catch (e) {
+            console.error("Erreur Supabase lors du rappel :", e);
         }
 
-        // 3. Animation du toast de confirmation
+        // Animation du toast de confirmation sur ton écran
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
         toast.style.opacity = '1';
