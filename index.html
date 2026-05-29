@@ -472,9 +472,13 @@
     <audio id="water-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
 <script>
+    // Configuration de ton projet Supabase
     const SUPABASE_URL = "https://dbcxfskynfuwcbbgjlso.supabase.co"; 
     const SUPABASE_KEY = "sb_publishable_vcEj5jZ7UcrirwO4HglatQ_tgrbAg6n";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Clé publique Webpushr pour l'identification de l'appareil
+    const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
 
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
@@ -491,7 +495,7 @@
     let chartWeekClemInstance = null;
     let chartWeekHoaInstance = null;
 
-    // Enregistrement passif du Service Worker Webpushr (pour l'abonnement de fond sans interférence de script)
+    // Enregistrement passif du Service Worker Webpushr
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/drinkwater/webpushr-sw.js', { scope: '/drinkwater/' })
         .then(reg => console.log('Service Worker Webpushr connecté !', reg))
@@ -513,6 +517,12 @@
         document.getElementById('profile-selection').style.display = 'none';
         switchView('main-view');
         applyTranslations();
+
+        // Associe l'utilisateur actuel à sa session de push (Webpushr sait qui reçoit)
+        if (window._webpushr) {
+            window._webpushr.push(["init", WEBPUSHR_KEY, currentUser]);
+        }
+
         loadData();
         checkOfflineReminders(); 
         listenRealtime();
@@ -635,22 +645,32 @@
         }
     }
 
+    // ENVOI DU RAPPEL VIA L'EDGE FUNCTION SECURISEE
     async function sendWaterReminder() {
         const isHoa = (currentUser === 'Hoa');
         let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
-        if (customMsg === null) return; // Annulation
+        if (customMsg === null) return; 
         customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
+        // 1. Sauvegarde dans Supabase (affichage instantané si l'autre personne a son appli ouverte)
+        await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
+
+        // 2. Déclenchement de l'Edge Function pour envoyer la vraie notification Push système
         try {
-            // Insertion du message dans Supabase : le canal realtime (listenRealtime) 
-            // se charge de faire apparaître l'alerte immédiatement sur l'appareil de la cible.
-            await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
-            console.log("Rappel envoyé avec succès via Supabase Realtime.");
+            // Le SDK appelle automatiquement ton URL Supabase en tâche de fond
+            await supabaseClient.functions.invoke('send-push', {
+                body: { 
+                    message: customMsg, 
+                    targetUser: targetUser, 
+                    sender: currentUser 
+                }
+            });
+            console.log("Notification envoyée à l'Edge Function Supabase.");
         } catch (e) {
-            console.error("Erreur Supabase lors du rappel :", e);
+            console.error("Erreur lors de l'appel de l'Edge Function :", e);
         }
 
-        // Animation du toast de confirmation sur ton écran
+        // 3. Animation du toast de confirmation sur ton écran
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
         toast.style.opacity = '1';
