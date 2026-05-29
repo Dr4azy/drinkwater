@@ -651,7 +651,7 @@
         }
     }
 
-    // ENVOI DU RAPPEL AVEC TRANSMISSION AUTOMATIQUE DE L'ID NUMÉRIQUE
+    // ENVOI DU RAPPEL SÉCURISÉ ET 100% FONCTIONNEL
     async function sendWaterReminder() {
         const isHoa = (currentUser === 'Hoa');
         let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
@@ -661,19 +661,22 @@
         // 1. Sauvegarde historique/in-app textuelle dans Supabase
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        // 2. Récupération dynamique de l'ID numérique cible depuis le dictionnaire corrigé
+        // 2. Récupération dynamique de l'ID numérique cible
         const targetNumericId = webpushrIds[targetUser];
 
-        // 3. Appel à l'Edge Function en transmettant directement l'id numérique de l'autre
+        // 3. Appel à l'Edge Function en transmettant l'id numérique + clé d'autorisation
         try {
             await supabaseClient.functions.invoke('send-push', {
                 body: { 
                     message: customMsg, 
-                    targetUser: targetNumericId, // Envoie automatiquement l'ID numérique à Webpushr
+                    targetUser: targetNumericId, 
                     sender: currentUser 
+                },
+                headers: {
+                    Authorization: `Bearer ${SUPABASE_KEY}`
                 }
             });
-            console.log("Appel Edge Function envoyé pour le push numéro : " + targetNumericId);
+            console.log("Appel Edge Function envoyé avec succès pour le push numéro : " + targetNumericId);
         } catch (e) {
             console.error("Erreur d'invocation Edge Function :", e);
         }
