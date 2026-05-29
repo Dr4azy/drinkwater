@@ -480,6 +480,12 @@
     // Clé publique Webpushr pour l'identification de l'appareil
     const WEBPUSHR_KEY = "BGRWk6uWTGHG_kcWXJLWcTPkWEzJp53vzrwDcCWtezHDJUtTWIsFv0db4avZZmBk6vx2ji6kRYBPD0On2qf1sfs";
 
+    // TABLEAU DE CORRESPONDANCE DES ID NUMÉRIQUES WEBPUSHR DEFINITIFS
+    const webpushrIds = {
+        'Clément': "201919883",
+        'Hoa': "201924385"
+    };
+
     let currentUser = localStorage.getItem('water_user') || null;
     let targetUser = "";
     let currentReminderId = null; 
@@ -518,7 +524,7 @@
         switchView('main-view');
         applyTranslations();
 
-        // Associe l'utilisateur actuel à sa session de push (Webpushr sait qui reçoit)
+        // Enregistrement facultatif de la session au format texte
         if (window._webpushr) {
             window._webpushr.push(["init", WEBPUSHR_KEY, currentUser]);
         }
@@ -645,32 +651,34 @@
         }
     }
 
-    // ENVOI DU RAPPEL VIA L'EDGE FUNCTION SECURISEE
+    // ENVOI DU RAPPEL AVEC TRANSMISSION AUTOMATIQUE DE L'ID NUMÉRIQUE
     async function sendWaterReminder() {
         const isHoa = (currentUser === 'Hoa');
         let customMsg = prompt(isHoa ? "Nhập tin nhắn của bạn:" : "Écris ton message personnalisé :", "");
         if (customMsg === null) return; 
         customMsg = customMsg.trim() === "" ? defaultMessages[targetUser] : customMsg.trim();
         
-        // 1. Sauvegarde dans Supabase (affichage instantané si l'autre personne a son appli ouverte)
+        // 1. Sauvegarde historique/in-app textuelle dans Supabase
         await supabaseClient.from('water_reminders').insert([{ sender: currentUser, message: customMsg }]);
 
-        // 2. Déclenchement de l'Edge Function pour envoyer la vraie notification Push système
+        // 2. Récupération dynamique de l'ID numérique cible depuis le dictionnaire corrigé
+        const targetNumericId = webpushrIds[targetUser];
+
+        // 3. Appel à l'Edge Function en transmettant directement l'id numérique de l'autre
         try {
-            // Le SDK appelle automatiquement ton URL Supabase en tâche de fond
             await supabaseClient.functions.invoke('send-push', {
                 body: { 
                     message: customMsg, 
-                    targetUser: targetUser, 
+                    targetUser: targetNumericId, // Envoie automatiquement l'ID numérique à Webpushr
                     sender: currentUser 
                 }
             });
-            console.log("Notification envoyée à l'Edge Function Supabase.");
+            console.log("Appel Edge Function envoyé pour le push numéro : " + targetNumericId);
         } catch (e) {
-            console.error("Erreur lors de l'appel de l'Edge Function :", e);
+            console.error("Erreur d'invocation Edge Function :", e);
         }
 
-        // 3. Animation du toast de confirmation sur ton écran
+        // 4. Animation du toast à l'écran
         const toast = document.getElementById('toast');
         toast.innerText = isHoa ? "Đã gửi nhắc nhở! ✉️" : "Rappel envoyé ! ✉️";
         toast.style.opacity = '1';
